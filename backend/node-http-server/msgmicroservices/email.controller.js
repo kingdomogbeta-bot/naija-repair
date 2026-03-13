@@ -51,7 +51,21 @@ exports.sendOTP = async (req, res) => {
     console.log('OTP:', otp);
     console.log('====================\n');
     
-    // ACTUALLY SEND THE EMAIL
+    // Store OTP first
+    otpStore.set(email, { otp, expiresAt });
+
+    try {
+      await OTP.deleteMany({ email });
+      await OTP.create({ email, otp, expiresAt: new Date(expiresAt) });
+      console.log('💾 OTP saved to database');
+    } catch (err) {
+      console.log('DB save failed:', err.message);
+    }
+
+    // Send response immediately
+    res.json({ message: 'OTP sent successfully' });
+    
+    // Send email in background (non-blocking)
     console.log('📧 SENDING EMAIL TO:', email);
     console.log('🔑 Using email:', process.env.EMAIL);
     
@@ -113,28 +127,18 @@ exports.sendOTP = async (req, res) => {
       `
     };
 
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log('✅ EMAIL SENT SUCCESSFULLY!');
-      console.log('📨 Message ID:', info.messageId);
-      console.log('📤 Response:', info.response);
-    } catch (emailError) {
-      console.error('❌ EMAIL SENDING FAILED:', emailError.message);
-      return res.status(500).json({ message: 'Failed to send email: ' + emailError.message });
-    }
-    
-    // Store OTP
-    otpStore.set(email, { otp, expiresAt });
+    // Send email asynchronously without blocking the response
+    transporter.sendMail(mailOptions)
+      .then(info => {
+        console.log('✅ EMAIL SENT SUCCESSFULLY!');
+        console.log('📨 Message ID:', info.messageId);
+        console.log('📤 Response:', info.response);
+      })
+      .catch(emailError => {
+        console.error('❌ EMAIL SENDING FAILED:', emailError.message);
+        // Email failed but user can still proceed with OTP from logs/database
+      });
 
-    try {
-      await OTP.deleteMany({ email });
-      await OTP.create({ email, otp, expiresAt: new Date(expiresAt) });
-      console.log('💾 OTP saved to database');
-    } catch (err) {
-      console.log('DB save failed:', err.message);
-    }
-
-    res.json({ message: 'OTP sent successfully' });
   } catch (error) {
     console.error('Send OTP error:', error);
     res.status(500).json({ message: error.message });
