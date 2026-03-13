@@ -1,0 +1,40 @@
+services:
+  # Main Backend API
+  - type: web
+    name: naija-repair-api
+    env: node
+    rootDir: backend/node-http-server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  # Email Microservice
+  - type: web
+    name: naija-repair-email
+    env: node
+    rootDir: backend/msg-microservice
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: EMAIL
+        sync: false
+      - key: EMAILSECRET
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+
+  # Frontend
+  - type: web
+    name: naija-repair-frontend
+    env: static
+    rootDir: vite-project
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
