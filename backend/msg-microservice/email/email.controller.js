@@ -1,34 +1,19 @@
 const nodemailer = require('nodemailer');
 const OTP = require('./otp.schema');
 
-console.log('🔥 EMAIL CONTROLLER LOADED - PRODUCTION VERSION');
+console.log('🔥 EMAIL CONTROLLER LOADED - SIMPLE VERSION');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Create Gmail transporter with OAuth2
-const createGmailTransporter = () => {
-  return nodemailer.createTransporter({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.EMAIL,
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-      accessToken: process.env.GMAIL_ACCESS_TOKEN
-    }
-  });
-};
-
-// Fallback SMTP transporter
-const createSMTPTransporter = () => {
+// Simple SMTP transporter using Brevo (free tier)
+const createTransporter = () => {
   return nodemailer.createTransporter({
     host: 'smtp-relay.brevo.com',
     port: 587,
     secure: false,
     auth: {
-      user: process.env.BREVO_EMAIL || 'your-email@example.com',
-      pass: process.env.BREVO_PASSWORD || 'your-smtp-key'
+      user: 'charlesautolimited@gmail.com', // Your email
+      pass: process.env.BREVO_SMTP_KEY || 'temp-key' // Get from Brevo
     }
   });
 };
@@ -49,14 +34,13 @@ exports.sendOTP = async (req, res) => {
     console.log('OTP:', otp);
     console.log('====================\n');
 
-    // Save to database first
+    // Save to database
     await OTP.deleteMany({ email });
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
 
-    // Send email asynchronously
     const mailOptions = {
-      from: process.env.EMAIL,
+      from: 'charlesautolimited@gmail.com',
       to: email,
       subject: 'Your OTP Code - Naija Repair',
       html: `
@@ -73,28 +57,15 @@ exports.sendOTP = async (req, res) => {
 
     console.log('📧 SENDING EMAIL TO:', email);
     
-    // Try OAuth2 Gmail first
     try {
-      const gmailTransporter = createGmailTransporter();
-      await gmailTransporter.sendMail(mailOptions);
-      console.log('✅ Email sent via Gmail OAuth2');
-    } catch (gmailError) {
-      console.log('🔄 Gmail OAuth2 failed, trying SMTP...');
-      
-      // Fallback to SMTP
-      try {
-        const smtpTransporter = createSMTPTransporter();
-        await smtpTransporter.sendMail(mailOptions);
-        console.log('✅ Email sent via SMTP');
-      } catch (smtpError) {
-        console.error('❌ All email methods failed');
-        console.error('Gmail error:', gmailError.message);
-        console.error('SMTP error:', smtpError.message);
-        console.log('🔑 OTP available in logs:', otp);
-      }
+      const transporter = createTransporter();
+      await transporter.sendMail(mailOptions);
+      console.log('✅ Email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Email failed:', emailError.message);
+      console.log('🔑 OTP available in logs:', otp);
     }
 
-    // Always return success since OTP is saved to database
     res.json({ message: 'OTP sent successfully' });
     
   } catch (error) {
