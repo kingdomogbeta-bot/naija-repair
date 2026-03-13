@@ -1,22 +1,18 @@
 const nodemailer = require('nodemailer');
 const OTP = require('./otp.schema');
 
-console.log('🔥 EMAIL CONTROLLER LOADED - SIMPLE VERSION');
+console.log('🔥 EMAIL CONTROLLER LOADED - BACK TO GMAIL');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Simple SMTP transporter using Brevo (free tier)
-const createTransporter = () => {
-  return nodemailer.createTransporter({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'charlesautolimited@gmail.com', // Your email
-      pass: process.env.BREVO_SMTP_KEY || 'temp-key' // Get from Brevo
-    }
-  });
-};
+// Gmail transporter - your original setup
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAILSECRET
+  }
+});
 
 exports.sendOTP = async (req, res) => {
   try {
@@ -39,8 +35,12 @@ exports.sendOTP = async (req, res) => {
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
 
+    console.log('📧 SENDING EMAIL TO:', email);
+    console.log('🔑 Using email:', process.env.EMAIL);
+    console.log('🔐 App password length:', process.env.EMAILSECRET ? process.env.EMAILSECRET.length : 'NOT SET');
+
     const mailOptions = {
-      from: 'charlesautolimited@gmail.com',
+      from: process.env.EMAIL,
       to: email,
       subject: 'Your OTP Code - Naija Repair',
       html: `
@@ -55,14 +55,16 @@ exports.sendOTP = async (req, res) => {
       `
     };
 
-    console.log('📧 SENDING EMAIL TO:', email);
-    
     try {
-      const transporter = createTransporter();
-      await transporter.sendMail(mailOptions);
-      console.log('✅ Email sent successfully');
+      const info = await transporter.sendMail(mailOptions);
+      console.log('✅ EMAIL SENT SUCCESSFULLY');
+      console.log('📬 Message ID:', info.messageId);
+      console.log('📤 Response:', info.response);
     } catch (emailError) {
-      console.error('❌ Email failed:', emailError.message);
+      console.error('❌ EMAIL SEND FAILED:');
+      console.error('Error code:', emailError.code);
+      console.error('Error message:', emailError.message);
+      console.error('Command:', emailError.command);
       console.log('🔑 OTP available in logs:', otp);
     }
 
