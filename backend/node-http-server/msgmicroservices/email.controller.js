@@ -7,61 +7,34 @@ console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
 // Create transporter with better error handling
-let transporter;
-
-const initializeTransporter = () => {
-  // Don't block startup - initialize in background
-  setTimeout(async () => {
-    try {
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.EMAIL,
-          pass: process.env.EMAILSECRET
-        },
-        tls: {
-          rejectUnauthorized: false
-        },
-        family: 4,
-        connectionTimeout: 5000,
-        greetingTimeout: 3000,
-        socketTimeout: 5000
-      });
-      
-      console.log('✅ Gmail transporter initialized');
-    } catch (error) {
-      console.error('❌ Gmail transporter failed:', error.message);
-      
-      // Simple fallback transporter
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.EMAIL,
-          pass: process.env.EMAILSECRET
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
-    }
-  }, 1000);
-};
-
-// Initialize after startup
-initializeTransporter();
-
-// Test connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error.message);
-  } else {
-    console.log('✅ Main server email transporter ready');
-  }
+let transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAILSECRET
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  family: 4
 });
+
+// Test connection after a delay
+setTimeout(() => {
+  if (transporter) {
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error('❌ Email transporter error:', error.message);
+      } else {
+        console.log('✅ Main server email transporter ready');
+      }
+    });
+  }
+}, 2000);
+
+
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
