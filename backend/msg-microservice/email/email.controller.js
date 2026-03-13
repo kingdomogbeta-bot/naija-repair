@@ -5,12 +5,17 @@ console.log('🔥 EMAIL CONTROLLER LOADED - GMAIL WITH NEW PASSWORD');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Gmail transporter
+// Gmail transporter with explicit SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
