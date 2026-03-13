@@ -48,44 +48,24 @@ exports.sendOTP = async (req, res) => {
     console.log('OTP:', otp);
     console.log('====================\n');
 
-    // ACTUALLY SEND THE EMAIL
-    console.log('📧 ATTEMPTING TO SEND EMAIL...');
-    console.log('From:', process.env.EMAIL);
-    console.log('To:', email);
-    console.log('App Password Length:', process.env.EMAILSECRET?.length);
+    // For now, skip email sending and just save OTP to database
+    // This allows testing while we fix email issues
+    console.log('⚠️ SKIPPING EMAIL SEND - SAVING OTP TO DATABASE ONLY');
+    console.log('🔑 Your OTP is:', otp, '(Check server logs)');
     
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Naija-Repair Verification Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">Naija-Repair Verification</h2>
-          <p style="font-size: 16px;">Your verification code is:</p>
-          <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
-            <h1 style="color: #007bff; font-size: 36px; margin: 0; letter-spacing: 4px;">${otp}</h1>
-          </div>
-          <p style="color: #666;">This code will expire in 10 minutes.</p>
-          <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
-        </div>
-      `
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ EMAIL SENT SUCCESSFULLY!');
-    console.log('📨 Message ID:', info.messageId);
-    console.log('📤 Response:', info.response);
-
     // Save to database
     await OTP.deleteMany({ email });
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
 
-    res.json({ message: 'OTP sent successfully' });
+    res.json({ 
+      message: 'OTP generated successfully. Check server logs for OTP code.',
+      debug: process.env.NODE_ENV !== 'production' ? { otp } : undefined
+    });
   } catch (error) {
-    console.error('❌ EMAIL SENDING ERROR:', error.message);
+    console.error('❌ OTP GENERATION ERROR:', error.message);
     console.error('❌ Full error:', error);
-    res.status(500).json({ message: 'Failed to send email: ' + error.message });
+    res.status(500).json({ message: 'Failed to generate OTP: ' + error.message });
   }
 };
 

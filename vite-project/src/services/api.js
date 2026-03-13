@@ -19,11 +19,17 @@ export const sendOTP = async (email) => {
   console.log('API URL:', `${API_URL}/email/send-otp`);
   
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     const response = await fetch(`${API_URL}/email/send-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     console.log('Response status:', response.status);
     console.log('Response ok:', response.ok);
@@ -34,6 +40,10 @@ export const sendOTP = async (email) => {
     if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
     return data;
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('Request timed out after 30 seconds');
+      throw new Error('Request timed out. Please try again.');
+    }
     console.error('sendOTP error:', error);
     throw error;
   }
