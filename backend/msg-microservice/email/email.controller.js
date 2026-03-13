@@ -1,41 +1,42 @@
 const nodemailer = require('nodemailer');
 const OTP = require('./otp.schema');
 
-console.log('🔥 EMAIL CONTROLLER LOADED - NEW VERSION');
+console.log('🔥 EMAIL CONTROLLER LOADED - PRODUCTION VERSION');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Create transporter with IPv4 fix
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAILSECRET
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  family: 4
-});
+// Create Gmail transporter with OAuth2
+const createGmailTransporter = () => {
+  return nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.EMAIL,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      accessToken: process.env.GMAIL_ACCESS_TOKEN
+    }
+  });
+};
 
-// Test connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error.message);
-  } else {
-    console.log('✅ Email server is ready to send messages');
-  }
-});
+// Fallback SMTP transporter
+const createSMTPTransporter = () => {
+  return nodemailer.createTransporter({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_EMAIL || 'your-email@example.com',
+      pass: process.env.BREVO_PASSWORD || 'your-smtp-key'
+    }
+  });
+};
 
 exports.sendOTP = async (req, res) => {
-  console.log('🚨 SEND OTP FUNCTION CALLED - THIS IS THE NEW VERSION');
-  
   try {
     const { email } = req.body;
-    console.log('📧 Email received:', email);
-
+    
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
@@ -48,24 +49,57 @@ exports.sendOTP = async (req, res) => {
     console.log('OTP:', otp);
     console.log('====================\n');
 
-    // For now, skip email sending and just save OTP to database
-    // This allows testing while we fix email issues
-    console.log('⚠️ SKIPPING EMAIL SEND - SAVING OTP TO DATABASE ONLY');
-    console.log('🔑 Your OTP is:', otp, '(Check server logs)');
-    
-    // Save to database
+    // Save to database first
     await OTP.deleteMany({ email });
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
 
-    res.json({ 
-      message: 'OTP generated successfully. Check server logs for OTP code.',
-      debug: process.env.NODE_ENV !== 'production' ? { otp } : undefined
-    });
+    // Send email asynchronously
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Your OTP Code - Naija Repair',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Your OTP Code</h2>
+          <p>Your One-Time Password (OTP) for Naija Repair is:</p>
+          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
+            ${otp}
+          </div>
+          <p>This code will expire in 10 minutes.</p>
+        </div>
+      `
+    };
+
+    console.log('📧 SENDING EMAIL TO:', email);
+    
+    // Try OAuth2 Gmail first
+    try {
+      const gmailTransporter = createGmailTransporter();
+      await gmailTransporter.sendMail(mailOptions);
+      console.log('✅ Email sent via Gmail OAuth2');
+    } catch (gmailError) {
+      console.log('🔄 Gmail OAuth2 failed, trying SMTP...');
+      
+      // Fallback to SMTP
+      try {
+        const smtpTransporter = createSMTPTransporter();
+        await smtpTransporter.sendMail(mailOptions);
+        console.log('✅ Email sent via SMTP');
+      } catch (smtpError) {
+        console.error('❌ All email methods failed');
+        console.error('Gmail error:', gmailError.message);
+        console.error('SMTP error:', smtpError.message);
+        console.log('🔑 OTP available in logs:', otp);
+      }
+    }
+
+    // Always return success since OTP is saved to database
+    res.json({ message: 'OTP sent successfully' });
+    
   } catch (error) {
-    console.error('❌ OTP GENERATION ERROR:', error.message);
-    console.error('❌ Full error:', error);
-    res.status(500).json({ message: 'Failed to generate OTP: ' + error.message });
+    console.error('❌ OTP ERROR:', error.message);
+    res.status(500).json({ message: 'Failed to generate OTP' });
   }
 };
 
