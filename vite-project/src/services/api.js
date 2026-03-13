@@ -1,5 +1,7 @@
 // Main API URL for production
 const API_URL = 'https://naija-repair-api.onrender.com/api';
+// Email service URL
+const EMAIL_API_URL = 'https://naija-repair-api2.onrender.com';
 
 // Debug function to test API connection
 const testAPIConnection = async () => {
@@ -16,13 +18,13 @@ testAPIConnection();
 
 export const sendOTP = async (email) => {
   console.log('Attempting to send OTP to:', email);
-  console.log('API URL:', `${API_URL}/email/send-otp`);
+  console.log('Email API URL:', `${EMAIL_API_URL}/send-otp`);
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
-    const response = await fetch(`${API_URL}/email/send-otp`, {
+    const response = await fetch(`${EMAIL_API_URL}/send-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -50,7 +52,7 @@ export const sendOTP = async (email) => {
 };
 
 export const verifyOTP = async (email, otp) => {
-  const response = await fetch(`${API_URL}/email/verify-otp`, {
+  const response = await fetch(`${EMAIL_API_URL}/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, otp })
