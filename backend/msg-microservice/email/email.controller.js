@@ -64,7 +64,10 @@ exports.sendOTP = async (req, res) => {
       console.error('❌ EMAIL SEND FAILED:');
       console.error('Error code:', emailError.code);
       console.error('Error message:', emailError.message);
+      console.error('Error response:', emailError.response);
+      console.error('Error responseCode:', emailError.responseCode);
       console.error('Command:', emailError.command);
+      console.error('Full error:', JSON.stringify(emailError, null, 2));
       console.log('🔑 OTP available in logs:', otp);
     }
 
