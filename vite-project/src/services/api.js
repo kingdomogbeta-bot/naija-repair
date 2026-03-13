@@ -22,7 +22,7 @@ export const sendOTP = async (email) => {
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
     
     const response = await fetch(`${EMAIL_API_URL}/api/email/send-otp`, {
       method: 'POST',
