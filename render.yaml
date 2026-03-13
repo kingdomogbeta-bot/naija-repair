@@ -9,10 +9,20 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: MONGODB_URI
+      - key: DBSTRING
         sync: false
-      - key: JWT_SECRET
+      - key: JWTSECRET
         sync: false
+      - key: EMAIL
+        sync: false
+      - key: EMAILSECRET
+        sync: false
+      - key: PSSECRET
+        sync: false
+      - key: PSPUB
+        sync: false
+      - key: EMAIL_SERVICE_URL
+        value: https://naija-repair-email.onrender.com/api/email
 
   # Email Microservice
   - type: web
@@ -24,11 +34,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DBSTRING
+        sync: false
       - key: EMAIL
         sync: false
       - key: EMAILSECRET
-        sync: false
-      - key: MONGODB_URI
         sync: false
 
   # Frontend
@@ -38,3 +48,6 @@ services:
     rootDir: vite-project
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    envVars:
+      - key: NODE_ENV
+        value: production
