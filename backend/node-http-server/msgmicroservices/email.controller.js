@@ -7,14 +7,17 @@ console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  family: 4
 });
 
 // Test connection
