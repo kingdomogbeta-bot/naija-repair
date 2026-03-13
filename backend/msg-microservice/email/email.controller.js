@@ -6,7 +6,7 @@ console.log('🔥 EMAIL CONTROLLER LOADED - NEW VERSION');
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // Create transporter with IPv4 fix
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
   secure: false,
