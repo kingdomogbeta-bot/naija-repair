@@ -5,16 +5,19 @@ console.log('🔥 EMAIL CONTROLLER LOADED - NEW VERSION');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+// Create transporter with IPv4 fix
+const transporter = nodemailer.createTransporter({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  family: 4
 });
 
 // Test connection on startup
@@ -82,7 +85,7 @@ exports.sendOTP = async (req, res) => {
   } catch (error) {
     console.error('❌ EMAIL SENDING ERROR:', error.message);
     console.error('❌ Full error:', error);
-    res.status(500).json({ message: 'Failed to send OTP: ' + error.message });
+    res.status(500).json({ message: 'Failed to send email: ' + error.message });
   }
 };
 
