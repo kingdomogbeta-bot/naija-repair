@@ -8,17 +8,17 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // Gmail transporter with IPv4 only
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
   },
-  tls: {
-    rejectUnauthorized: false
-  },
   // Force IPv4
-  family: 4
+  family: 4,
+  connectionTimeout: 60000,
+  greetingTimeout: 30000,
+  socketTimeout: 60000
 });
 
 exports.sendOTP = async (req, res) => {
