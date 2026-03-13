@@ -6,19 +6,22 @@ console.log('🔥 MAIN SERVER EMAIL CONTROLLER LOADED');
 console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
-// Use Nodemailer with Gmail but with better configuration for hosting
+// Use a more reliable email service for production
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  pool: true,
+  maxConnections: 1,
+  rateDelta: 20000,
+  rateLimit: 5
 });
 
 // Test connection after a delay
@@ -134,23 +137,37 @@ exports.sendOTP = async (req, res) => {
       `
     };
 
-    // Send email asynchronously without blocking the response
-    transporter.sendMail(mailOptions)
-      .then(info => {
-        console.log('✅ EMAIL SENT SUCCESSFULLY!');
-        console.log('📨 Message ID:', info.messageId);
-        console.log('📤 Response:', info.response);
+    // Send email with retry logic
+    const sendEmailWithRetry = async (mailOptions, retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const info = await transporter.sendMail(mailOptions);
+          console.log('✅ EMAIL SENT SUCCESSFULLY!');
+          console.log('📨 Message ID:', info.messageId);
+          return true;
+        } catch (error) {
+          console.error(`❌ EMAIL ATTEMPT ${i + 1} FAILED:`, error.message);
+          if (i === retries - 1) {
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+        }
+      }
+    };
+
+    // Try to send email
+    sendEmailWithRetry(mailOptions)
+      .then(() => {
+        console.log('📧 Email delivered to user successfully');
       })
       .catch(async emailError => {
-        console.error('❌ EMAIL SENDING FAILED:', emailError.message);
+        console.error('🚨 ALL EMAIL ATTEMPTS FAILED:', emailError.message);
         
-        // Try alternative method - log OTP prominently for now
+        // Log OTP prominently for debugging
         console.log('\n🚨🚨🚨 EMAIL FAILED - OTP CODE BELOW 🚨🚨🚨');
         console.log(`📧 Email: ${email}`);
         console.log(`🔑 OTP: ${otp}`);
         console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
-        
-        // TODO: Implement SMS or alternative notification
       });
 
   } catch (error) {
