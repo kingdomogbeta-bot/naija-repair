@@ -15,14 +15,28 @@ const testAPIConnection = async () => {
 testAPIConnection();
 
 export const sendOTP = async (email) => {
-  const response = await fetch(`${API_URL}/email/send-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
-  return data;
+  console.log('Attempting to send OTP to:', email);
+  console.log('API URL:', `${API_URL}/email/send-otp`);
+  
+  try {
+    const response = await fetch(`${API_URL}/email/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
+    const data = await response.json();
+    console.log('Response data:', data);
+    
+    if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
+    return data;
+  } catch (error) {
+    console.error('sendOTP error:', error);
+    throw error;
+  }
 };
 
 export const verifyOTP = async (email, otp) => {
