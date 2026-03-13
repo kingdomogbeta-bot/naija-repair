@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const OTP = require('./otp.schema');
 require('dotenv').config();
 
@@ -6,7 +7,10 @@ console.log('🔥 MAIN SERVER EMAIL CONTROLLER LOADED');
 console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
-// Use a more reliable email service for production
+// Initialize Resend (HTTP-based email service)
+const resend = new Resend('re_123456789'); // We'll use a test key for now
+
+// Fallback Gmail transporter
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
@@ -155,20 +159,54 @@ exports.sendOTP = async (req, res) => {
       }
     };
 
-    // Try to send email
-    sendEmailWithRetry(mailOptions)
-      .then(() => {
-        console.log('📧 Email delivered to user successfully');
-      })
-      .catch(async emailError => {
-        console.error('🚨 ALL EMAIL ATTEMPTS FAILED:', emailError.message);
-        
-        // Log OTP prominently for debugging
-        console.log('\n🚨🚨🚨 EMAIL FAILED - OTP CODE BELOW 🚨🚨🚨');
-        console.log(`📧 Email: ${email}`);
-        console.log(`🔑 OTP: ${otp}`);
-        console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
-      });
+    // Try HTTP-based email service first (more reliable on hosting platforms)
+    const sendViaResend = async () => {
+      try {
+        // For now, simulate successful sending and use Gmail fallback
+        throw new Error('Resend not configured yet');
+      } catch (error) {
+        console.log('🔄 Resend failed, trying Gmail SMTP...');
+        return false;
+      }
+    };
+
+    // Try Resend first, then Gmail
+    const emailSent = await sendViaResend();
+    
+    if (!emailSent) {
+      // Fallback to Gmail with retry logic
+      const sendEmailWithRetry = async (mailOptions, retries = 3) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log('✅ GMAIL EMAIL SENT SUCCESSFULLY!');
+            console.log('📨 Message ID:', info.messageId);
+            return true;
+          } catch (error) {
+            console.error(`❌ GMAIL ATTEMPT ${i + 1} FAILED:`, error.message);
+            if (i === retries - 1) {
+              throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+      };
+
+      // Try Gmail
+      sendEmailWithRetry(mailOptions)
+        .then(() => {
+          console.log('📧 Email delivered to user via Gmail');
+        })
+        .catch(async emailError => {
+          console.error('🚨 ALL EMAIL METHODS FAILED:', emailError.message);
+          
+          // Log OTP prominently
+          console.log('\n🚨🚨🚨 EMAIL FAILED - OTP CODE BELOW 🚨🚨🚨');
+          console.log(`📧 Email: ${email}`);
+          console.log(`🔑 OTP: ${otp}`);
+          console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
+        });
+    }
 
   } catch (error) {
     console.error('Send OTP error:', error);
