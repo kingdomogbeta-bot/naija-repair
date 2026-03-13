@@ -17,7 +17,7 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:5000/api/users/all', {
+      const response = await fetch('https://naija-repair-api.onrender.com/api/users/all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ export default function AdminUsers() {
               email: user.email,
               role: user.role || 'User',
               bookings: userBookings.length,
-              status: user.isActive ? 'Active' : 'Inactive',
+              status: user.isActive !== false ? 'Active' : 'Inactive',
               joined: user.createdAt || new Date().toISOString()
             };
           });

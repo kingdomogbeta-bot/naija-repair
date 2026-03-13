@@ -16,6 +16,11 @@ export default function AdminTaskers() {
   // Get all taskers from context (includes virtual + real)
   const allTaskers = getAllTaskers();
   console.log('AdminTaskers - all taskers from context:', allTaskers.length, allTaskers.map(t => ({ id: t.id, name: t.name, isBackend: !!t.isBackendTasker })));
+  
+  const filteredTaskers = allTaskers.filter(t => 
+    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleRefresh = async () => {
     setLoading(true);
@@ -29,7 +34,7 @@ export default function AdminTaskers() {
         if (tasker._id || tasker.isBackendTasker) {
           try {
             const token = getToken();
-            const response = await fetch(`http://localhost:5000/api/taskers/unsuspend/${tasker._id}`, {
+            const response = await fetch(`https://naija-repair-api.onrender.com/api/taskers/unsuspend/${tasker._id}`, {
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -38,7 +43,7 @@ export default function AdminTaskers() {
             });
             const data = await response.json();
             if (data.success) {
-              await handleRefresh(); // Refresh from context
+              await handleRefresh();
               alert('Tasker unsuspended successfully');
             } else {
               alert(data.message || 'Failed to unsuspend tasker');
@@ -47,7 +52,6 @@ export default function AdminTaskers() {
             alert('Failed to unsuspend tasker');
           }
         } else {
-          // Virtual taskers can't be suspended/unsuspended
           alert('Cannot modify virtual tasker status');
         }
       }
@@ -56,7 +60,7 @@ export default function AdminTaskers() {
         if (tasker._id || tasker.isBackendTasker) {
           try {
             const token = getToken();
-            const response = await fetch(`http://localhost:5000/api/taskers/suspend/${tasker._id}`, {
+            const response = await fetch(`https://naija-repair-api.onrender.com/api/taskers/suspend/${tasker._id}`, {
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -66,7 +70,7 @@ export default function AdminTaskers() {
             });
             const data = await response.json();
             if (data.success) {
-              await handleRefresh(); // Refresh from context
+              await handleRefresh();
               alert('Tasker suspended successfully');
             } else {
               alert(data.message || 'Failed to suspend tasker');
@@ -75,7 +79,6 @@ export default function AdminTaskers() {
             alert('Failed to suspend tasker');
           }
         } else {
-          // Virtual taskers can't be suspended/unsuspended
           alert('Cannot modify virtual tasker status');
         }
       }
@@ -100,7 +103,7 @@ export default function AdminTaskers() {
           alert('Verification rejected');
         }
       }
-      await handleRefresh(); // Refresh from context
+      await handleRefresh();
     } catch (error) {
       alert(error.message);
     }
@@ -109,11 +112,6 @@ export default function AdminTaskers() {
   const handleView = (tasker) => {
     setSelectedTasker(tasker);
   };
-
-  const filteredTaskers = allTaskers.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -415,10 +413,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">NIN Card Photo</p>
                             <img 
-                              src={`http://localhost:5000${selectedTasker.ninPhotoUrl}`} 
+                              src={`https://naija-repair-api.onrender.com${selectedTasker.ninPhotoUrl}`} 
                               alt="NIN Card" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(`http://localhost:5000${selectedTasker.ninPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(`https://naija-repair-api.onrender.com${selectedTasker.ninPhotoUrl}`, '_blank')}
                             />
                           </div>
                         )}
@@ -426,10 +424,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">Live Passport Photo</p>
                             <img 
-                              src={`http://localhost:5000${selectedTasker.passportPhotoUrl}`} 
+                              src={`https://naija-repair-api.onrender.com${selectedTasker.passportPhotoUrl}`} 
                               alt="Passport" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(`http://localhost:5000${selectedTasker.passportPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(`https://naija-repair-api.onrender.com${selectedTasker.passportPhotoUrl}`, '_blank')}
                             />
                           </div>
                         )}
