@@ -6,7 +6,7 @@ console.log('🔥 EMAIL CONTROLLER LOADED - BACK TO GMAIL');
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // Gmail transporter - your original setup
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL,
