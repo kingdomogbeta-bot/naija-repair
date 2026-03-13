@@ -1,6 +1,5 @@
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://naija-repair-api.onrender.com/api' 
-  : 'http://localhost:5000/api';
+// Main API URL for production
+const API_URL = 'https://naija-repair-api.onrender.com/api';
 
 export const sendOTP = async (email) => {
   const response = await fetch(`${API_URL}/email/send-otp`, {
