@@ -5,13 +5,16 @@ console.log('🔥 EMAIL CONTROLLER LOADED - BACK TO GMAIL');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Simple Gmail transporter
+// Simple Gmail transporter with timeout
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
-  }
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 5000,     // 5 seconds  
+  socketTimeout: 10000       // 10 seconds
 });
 
 exports.sendOTP = async (req, res) => {
@@ -55,7 +58,11 @@ exports.sendOTP = async (req, res) => {
       `
     };
 
+    console.log('🚀 ATTEMPTING TO SEND EMAIL...');
+    console.log('📧 Mail options:', JSON.stringify(mailOptions, null, 2));
+    
     try {
+      console.log('⏰ Starting email send at:', new Date().toISOString());
       const info = await transporter.sendMail(mailOptions);
       console.log('✅ EMAIL SENT SUCCESSFULLY');
       console.log('📬 Message ID:', info.messageId);
@@ -70,6 +77,8 @@ exports.sendOTP = async (req, res) => {
       console.error('Full error:', JSON.stringify(emailError, null, 2));
       console.log('🔑 OTP available in logs:', otp);
     }
+    
+    console.log('⏰ Email send attempt completed at:', new Date().toISOString());
 
     res.json({ message: 'OTP sent successfully' });
     
