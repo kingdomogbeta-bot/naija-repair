@@ -5,13 +5,20 @@ console.log('🔥 EMAIL CONTROLLER LOADED - BACK TO GMAIL');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Gmail transporter - your original setup
+// Gmail transporter with IPv4 only
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
-  }
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  // Force IPv4
+  family: 4
 });
 
 exports.sendOTP = async (req, res) => {
