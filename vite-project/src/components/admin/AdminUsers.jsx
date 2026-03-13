@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useBookings } from '../../context/BookingsContext';
 import { useAuth } from '../../context/AuthContext';
+import { buildApiUrl } from '../../config/api';
 import { Users, Search, Download, Eye, Ban } from 'lucide-react';
 
 export default function AdminUsers() {
@@ -17,7 +18,7 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       const token = getToken();
-      const response = await fetch('https://naija-repair-api.onrender.com/api/users/all', {
+      const response = await fetch(buildApiUrl('/users/all'), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

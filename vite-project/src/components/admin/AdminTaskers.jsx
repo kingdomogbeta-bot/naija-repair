@@ -4,6 +4,7 @@ import { resolveTaskerPhoto, setTaskerFallbackOnError } from '../../utils/tasker
 import { useAuth } from '../../context/AuthContext';
 import { useTaskers } from '../../context/TaskersContext';
 import { approveTaskerVerification, rejectTaskerVerification } from '../../services/api';
+import { buildApiUrl, API_CONFIG } from '../../config/api';
 
 export default function AdminTaskers() {
   const { getAllTaskers, refreshTaskers } = useTaskers();
@@ -34,7 +35,7 @@ export default function AdminTaskers() {
         if (tasker._id || tasker.isBackendTasker) {
           try {
             const token = getToken();
-            const response = await fetch(`https://naija-repair-api.onrender.com/api/taskers/unsuspend/${tasker._id}`, {
+            const response = await fetch(buildApiUrl(`/taskers/unsuspend/${tasker._id}`), {
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -60,7 +61,7 @@ export default function AdminTaskers() {
         if (tasker._id || tasker.isBackendTasker) {
           try {
             const token = getToken();
-            const response = await fetch(`https://naija-repair-api.onrender.com/api/taskers/suspend/${tasker._id}`, {
+            const response = await fetch(buildApiUrl(`/taskers/suspend/${tasker._id}`), {
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -413,10 +414,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">NIN Card Photo</p>
                             <img 
-                              src={`https://naija-repair-api.onrender.com${selectedTasker.ninPhotoUrl}`} 
+                              src={`${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.ninPhotoUrl}`} 
                               alt="NIN Card" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(`https://naija-repair-api.onrender.com${selectedTasker.ninPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(`${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.ninPhotoUrl}`, '_blank')}
                             />
                           </div>
                         )}
@@ -424,10 +425,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">Live Passport Photo</p>
                             <img 
-                              src={`https://naija-repair-api.onrender.com${selectedTasker.passportPhotoUrl}`} 
+                              src={`${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.passportPhotoUrl}`} 
                               alt="Passport" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(`https://naija-repair-api.onrender.com${selectedTasker.passportPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(`${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.passportPhotoUrl}`, '_blank')}
                             />
                           </div>
                         )}

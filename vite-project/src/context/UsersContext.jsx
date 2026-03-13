@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { buildApiUrl } from '../config/api';
 
 const UsersContext = createContext();
 
@@ -15,7 +16,7 @@ export const UsersProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch('https://naija-repair-api.onrender.com/api/users/all', {
+      const response = await fetch(buildApiUrl('/users/all'), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getUserBookings, createBooking as apiCreateBooking, completeBooking as apiCompleteBooking, cancelBooking as apiCancelBooking, deleteBooking as apiDeleteBooking, acceptBooking as apiAcceptBooking } from '../services/api';
+import { buildApiUrl } from '../config/api';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
 
@@ -21,7 +22,7 @@ export function BookingsProvider({ children }) {
       
       // Admin users get all bookings
       if (user.role === 'admin') {
-        const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/all', {
+        const response = await fetch(buildApiUrl('/bookings/all'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -32,7 +33,7 @@ export function BookingsProvider({ children }) {
       } 
       // Taskers get their assigned bookings + all pending bookings
       else if (user.role === 'tasker') {
-        const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/tasker', {
+        const response = await fetch(buildApiUrl('/bookings/tasker'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -105,7 +106,7 @@ export function BookingsProvider({ children }) {
   const updateBookingStatus = async (id, status) => {
     try {
       const token = getToken();
-      const endpoint = `https://naija-repair-api.onrender.com/api/bookings/${id}/${status}`;
+      const endpoint = buildApiUrl(`/bookings/${id}/${status}`);
       const response = await fetch(endpoint, {
         method: 'PUT',
         headers: { 
@@ -140,7 +141,7 @@ export function BookingsProvider({ children }) {
   const unassignBooking = async (id) => {
     try {
       const token = getToken();
-      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${id}/unassign`, {
+      const response = await fetch(buildApiUrl(`/bookings/${id}/unassign`), {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -159,7 +160,7 @@ export function BookingsProvider({ children }) {
   const updateBooking = async (id, data) => {
     try {
       const token = getToken();
-      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${id}`, {
+      const response = await fetch(buildApiUrl(`/bookings/${id}`), {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -210,7 +211,7 @@ export function BookingsProvider({ children }) {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/all', {
+      const response = await fetch(buildApiUrl('/bookings/all'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {

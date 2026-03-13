@@ -1,7 +1,9 @@
+import { API_CONFIG, buildApiUrl, buildEmailUrl } from '../config/api';
+
 // Main API URL for production
-const API_URL = 'https://naija-repair-api.onrender.com/api';
+const API_URL = API_CONFIG.BASE_URL;
 // Email service URL
-const EMAIL_API_URL = 'https://naija-repair-api2.onrender.com';
+const EMAIL_API_URL = API_CONFIG.EMAIL_SERVICE_URL;
 
 // Debug function to test API connection
 const testAPIConnection = async () => {
