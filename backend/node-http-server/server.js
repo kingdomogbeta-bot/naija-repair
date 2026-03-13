@@ -23,7 +23,7 @@ app.use(helmet({
 }));
 app.use(morgan('dev'));
 app.use(cors({
-  origin: '*',
+  origin: ['https://naija-repair-rd5j.onrender.com', 'http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(bodyParser.json());

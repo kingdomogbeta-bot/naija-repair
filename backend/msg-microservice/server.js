@@ -23,7 +23,10 @@ mongoose.connect(DBSTRING, {
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors({ 
+  origin: ['https://naija-repair-rd5j.onrender.com', 'http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
