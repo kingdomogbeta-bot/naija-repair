@@ -6,53 +6,52 @@ console.log('🔥 MAIN SERVER EMAIL CONTROLLER LOADED');
 console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
-// Create test account and transporter
+// Create transporter with better error handling
 let transporter;
 
-const initializeTransporter = async () => {
-  try {
-    // Try Gmail first
-    transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAILSECRET
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      family: 4,
-      connectionTimeout: 10000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000
-    });
-    
-    console.log('✅ Gmail transporter initialized');
-  } catch (error) {
-    console.error('❌ Gmail transporter failed:', error.message);
-    
-    // Fallback to Ethereal for testing
+const initializeTransporter = () => {
+  // Don't block startup - initialize in background
+  setTimeout(async () => {
     try {
-      const testAccount = await nodemailer.createTestAccount();
       transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
+          user: process.env.EMAIL,
+          pass: process.env.EMAILSECRET
+        },
+        tls: {
+          rejectUnauthorized: false
+        },
+        family: 4,
+        connectionTimeout: 5000,
+        greetingTimeout: 3000,
+        socketTimeout: 5000
+      });
+      
+      console.log('✅ Gmail transporter initialized');
+    } catch (error) {
+      console.error('❌ Gmail transporter failed:', error.message);
+      
+      // Simple fallback transporter
+      transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.EMAILSECRET
+        },
+        tls: {
+          rejectUnauthorized: false
         }
       });
-      console.log('✅ Ethereal test transporter initialized');
-    } catch (fallbackError) {
-      console.error('❌ All email services failed:', fallbackError.message);
     }
-  }
+  }, 1000);
 };
 
-// Initialize on startup
+// Initialize after startup
 initializeTransporter();
 
 // Test connection
