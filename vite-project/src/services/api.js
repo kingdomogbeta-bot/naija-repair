@@ -18,13 +18,13 @@ testAPIConnection();
 
 export const sendOTP = async (email) => {
   console.log('Attempting to send OTP to:', email);
-  console.log('Email API URL:', `${EMAIL_API_URL}/send-otp`);
+  console.log('Email API URL:', `${EMAIL_API_URL}/api/email/send-otp`);
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
-    const response = await fetch(`${EMAIL_API_URL}/send-otp`, {
+    const response = await fetch(`${EMAIL_API_URL}/api/email/send-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -52,7 +52,7 @@ export const sendOTP = async (email) => {
 };
 
 export const verifyOTP = async (email, otp) => {
-  const response = await fetch(`${EMAIL_API_URL}/verify-otp`, {
+  const response = await fetch(`${EMAIL_API_URL}/api/email/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, otp })
