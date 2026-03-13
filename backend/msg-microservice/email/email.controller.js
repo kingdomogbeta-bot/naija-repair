@@ -1,20 +1,26 @@
 const nodemailer = require('nodemailer');
 const OTP = require('./otp.schema');
 
-console.log('🔥 EMAIL CONTROLLER LOADED - BACK TO GMAIL');
+console.log('🔥 EMAIL CONTROLLER LOADED - GMAIL WITH NEW PASSWORD');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Simple Gmail transporter with timeout
+// Gmail transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
-  },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 5000,     // 5 seconds  
-  socketTimeout: 10000       // 10 seconds
+  }
+});
+
+// Test connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Email transporter error:', error.message);
+  } else {
+    console.log('✅ Email server is ready to send messages');
+  }
 });
 
 exports.sendOTP = async (req, res) => {
@@ -45,40 +51,30 @@ exports.sendOTP = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL,
       to: email,
-      subject: 'Your OTP Code - Naija Repair',
+      subject: 'Naija-Repair Verification Code',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Your OTP Code</h2>
-          <p>Your One-Time Password (OTP) for Naija Repair is:</p>
-          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
-            ${otp}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333; text-align: center;">Naija-Repair Verification</h2>
+          <p style="font-size: 16px;">Your verification code is:</p>
+          <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #007bff; font-size: 36px; margin: 0; letter-spacing: 4px;">${otp}</h1>
           </div>
-          <p>This code will expire in 10 minutes.</p>
+          <p style="color: #666;">This code will expire in 10 minutes.</p>
+          <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
         </div>
       `
     };
 
-    console.log('🚀 ATTEMPTING TO SEND EMAIL...');
-    console.log('📧 Mail options:', JSON.stringify(mailOptions, null, 2));
-    
     try {
-      console.log('⏰ Starting email send at:', new Date().toISOString());
       const info = await transporter.sendMail(mailOptions);
-      console.log('✅ EMAIL SENT SUCCESSFULLY');
-      console.log('📬 Message ID:', info.messageId);
+      console.log('✅ EMAIL SENT SUCCESSFULLY!');
+      console.log('📨 Message ID:', info.messageId);
       console.log('📤 Response:', info.response);
     } catch (emailError) {
-      console.error('❌ EMAIL SEND FAILED:');
-      console.error('Error code:', emailError.code);
-      console.error('Error message:', emailError.message);
-      console.error('Error response:', emailError.response);
-      console.error('Error responseCode:', emailError.responseCode);
-      console.error('Command:', emailError.command);
-      console.error('Full error:', JSON.stringify(emailError, null, 2));
+      console.error('❌ EMAIL SENDING ERROR:', emailError.message);
+      console.error('❌ Full error:', emailError);
       console.log('🔑 OTP available in logs:', otp);
     }
-    
-    console.log('⏰ Email send attempt completed at:', new Date().toISOString());
 
     res.json({ message: 'OTP sent successfully' });
     
