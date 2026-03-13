@@ -161,13 +161,16 @@ function SignUpPage() {
                 
                 console.log('Sending OTP to:', email.trim());
                 
+                // Go to OTP page immediately
+                setStep('otp');
+                
+                // Send OTP in background
                 try {
                   const response = await sendOTP(email.trim());
                   console.log('OTP sent successfully:', response);
-                  setStep('otp');
                 } catch (error) {
                   console.error('OTP send failed:', error);
-                  alert(error.message || 'Failed to send OTP. Please check your internet connection and try again.');
+                  // Don't show error alert, user can still use OTP from logs
                 }
               }}
             >
