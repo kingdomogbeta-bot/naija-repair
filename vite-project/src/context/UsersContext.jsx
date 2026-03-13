@@ -15,7 +15,7 @@ export const UsersProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch('http://localhost:5000/api/users/all', {
+      const response = await fetch('https://naija-repair-api.onrender.com/api/users/all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

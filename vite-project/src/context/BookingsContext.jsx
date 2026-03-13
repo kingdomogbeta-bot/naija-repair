@@ -21,7 +21,7 @@ export function BookingsProvider({ children }) {
       
       // Admin users get all bookings
       if (user.role === 'admin') {
-        const response = await fetch('http://localhost:5000/api/bookings/all', {
+        const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/all', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -32,7 +32,7 @@ export function BookingsProvider({ children }) {
       } 
       // Taskers get their assigned bookings + all pending bookings
       else if (user.role === 'tasker') {
-        const response = await fetch('http://localhost:5000/api/bookings/tasker', {
+        const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/tasker', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -105,7 +105,7 @@ export function BookingsProvider({ children }) {
   const updateBookingStatus = async (id, status) => {
     try {
       const token = getToken();
-      const endpoint = `http://localhost:5000/api/bookings/${id}/${status}`;
+      const endpoint = `https://naija-repair-api.onrender.com/api/bookings/${id}/${status}`;
       const response = await fetch(endpoint, {
         method: 'PUT',
         headers: { 
@@ -140,7 +140,7 @@ export function BookingsProvider({ children }) {
   const unassignBooking = async (id) => {
     try {
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${id}/unassign`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${id}/unassign`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -159,7 +159,7 @@ export function BookingsProvider({ children }) {
   const updateBooking = async (id, data) => {
     try {
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${id}`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -210,7 +210,7 @@ export function BookingsProvider({ children }) {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch('http://localhost:5000/api/bookings/all', {
+      const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {

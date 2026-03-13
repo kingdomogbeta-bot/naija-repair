@@ -449,7 +449,7 @@ export function TaskersProvider({ children }) {
       try {
         const timestamp = new Date().getTime();
         // Use includeUnapproved=true to get ALL taskers for the context
-        const endpoint = 'http://localhost:5000/api/taskers/all?includeUnapproved=true';
+        const endpoint = 'https://naija-repair-api.onrender.com/api/taskers/all?includeUnapproved=true';
         
         console.log('Fetching ALL taskers from backend (including unapproved)...');
         const response = await fetch(`${endpoint}&t=${timestamp}`, {
@@ -530,7 +530,7 @@ export function TaskersProvider({ children }) {
       if (tasker && tasker._id) {
         const token = localStorage.getItem('naija_token');
         if (token) {
-          await fetch('http://localhost:5000/api/taskers/profile', {
+          await fetch('https://naija-repair-api.onrender.com/api/taskers/profile', {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`,
