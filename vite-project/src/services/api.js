@@ -1,6 +1,19 @@
 // Main API URL for production
 const API_URL = 'https://naija-repair-api.onrender.com/api';
 
+// Debug function to test API connection
+const testAPIConnection = async () => {
+  try {
+    const response = await fetch(`${API_URL.replace('/api', '')}/api/health`);
+    console.log('API Health Check:', response.status, await response.json());
+  } catch (error) {
+    console.error('API Connection Failed:', error);
+  }
+};
+
+// Test connection on load
+testAPIConnection();
+
 export const sendOTP = async (email) => {
   const response = await fetch(`${API_URL}/email/send-otp`, {
     method: 'POST',
