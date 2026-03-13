@@ -6,19 +6,19 @@ console.log('🔥 MAIN SERVER EMAIL CONTROLLER LOADED');
 console.log('📧 Email config:', process.env.EMAIL);
 console.log('🔑 Password length:', process.env.EMAILSECRET?.length);
 
-// Create transporter with better error handling
-let transporter = nodemailer.createTransport({
+// Use Nodemailer with Gmail but with better configuration for hosting
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAILSECRET
   },
   tls: {
     rejectUnauthorized: false
-  },
-  family: 4
+  }
 });
 
 // Test connection after a delay
@@ -141,9 +141,16 @@ exports.sendOTP = async (req, res) => {
         console.log('📨 Message ID:', info.messageId);
         console.log('📤 Response:', info.response);
       })
-      .catch(emailError => {
+      .catch(async emailError => {
         console.error('❌ EMAIL SENDING FAILED:', emailError.message);
-        // Email failed but user can still proceed with OTP from logs/database
+        
+        // Try alternative method - log OTP prominently for now
+        console.log('\n🚨🚨🚨 EMAIL FAILED - OTP CODE BELOW 🚨🚨🚨');
+        console.log(`📧 Email: ${email}`);
+        console.log(`🔑 OTP: ${otp}`);
+        console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
+        
+        // TODO: Implement SMS or alternative notification
       });
 
   } catch (error) {
