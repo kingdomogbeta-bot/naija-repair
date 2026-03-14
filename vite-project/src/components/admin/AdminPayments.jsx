@@ -51,6 +51,7 @@ export default function AdminPayments() {
   const rate = commissionRate / 100;
   const successful = payments.filter(p => p.status === 'success');
   const totalRevenue = successful.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const totalCommission = successful.reduce((sum, p) => sum + Math.round((p.amount || 0) * rate), 0);
   const totalTaskerPayout = successful.reduce((sum, p) => sum + Math.round((p.amount || 0) * (1 - rate)), 0);
   const pending = payments.filter(p => p.status === 'pending');
   const failed = payments.filter(p => p.status === 'failed');
@@ -85,8 +86,8 @@ export default function AdminPayments() {
         </div>
         <div className="bg-teal-50 rounded-xl shadow-md p-5 border border-teal-200">
           <p className="text-teal-600 text-sm font-medium">Admin Commission</p>
-          <p className="text-xl font-bold text-teal-700 mt-1">₦{adminEarnings.totalCommission.toLocaleString()}</p>
-          <p className="text-xs text-teal-500 mt-1">{adminEarnings.totalTransactions} transactions</p>
+          <p className="text-xl font-bold text-teal-700 mt-1">₦{totalCommission.toLocaleString()}</p>
+          <p className="text-xs text-teal-500 mt-1">{successful.length} transactions</p>
         </div>
         <div className="bg-white rounded-xl shadow-md p-5">
           <p className="text-gray-500 text-sm">Tasker Payouts</p>
