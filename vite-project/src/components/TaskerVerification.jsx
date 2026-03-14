@@ -15,6 +15,7 @@ export default function TaskerVerification({ tasker, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
+  const [facingMode, setFacingMode] = useState('user');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -32,17 +33,21 @@ export default function TaskerVerification({ tasker, onSuccess }) {
     }
   };
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (mode = facingMode) => {
     setError('');
+    // Stop any existing stream first
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'user'
+          facingMode: mode
         } 
       });
-      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -53,7 +58,13 @@ export default function TaskerVerification({ tasker, onSuccess }) {
       console.error('Camera error:', err);
       setError('Unable to access camera. Please check permissions.');
     }
-  }, []);
+  }, [facingMode]);
+
+  const flipCamera = useCallback(async () => {
+    const newMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newMode);
+    await startCamera(newMode);
+  }, [facingMode, startCamera]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -264,71 +275,89 @@ export default function TaskerVerification({ tasker, onSuccess }) {
           <label className="block text-sm font-semibold text-gray-900 mb-3">
             Live Photo Verification
           </label>
-          {showCamera ? (
-            <div className="space-y-4">
-              <div className="relative bg-black rounded-lg overflow-hidden">
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  playsInline 
-                  muted
-                  className="w-full h-auto"
-                />
-                <canvas ref={canvasRef} className="hidden" />
-              </div>
-              <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {livePreview && (
+              <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-teal-500">
+                <img src={livePreview} alt="Live" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={capturePhoto}
-                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+                  onClick={() => setLivePreview('')}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Capture Photo
-                </button>
-                <button
-                  type="button"
-                  onClick={stopCamera}
-                  className="px-6 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-4">
-              {livePreview && (
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-teal-500">
-                  <img src={livePreview} alt="Live" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setLivePreview('')}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={startCamera}
-                className="flex-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 hover:bg-teal-50 transition-all group"
-              >
-                <svg className="w-12 h-12 text-gray-400 group-hover:text-teal-500 mx-auto mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p className="text-sm font-medium text-gray-700 group-hover:text-teal-600">Take Live Photo</p>
-                <p className="text-xs text-gray-500 mt-1">Use your camera</p>
-              </button>
-            </div>
-          )}
+            )}
+            <button
+              type="button"
+              onClick={startCamera}
+              className="flex-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 hover:bg-teal-50 transition-all group"
+            >
+              <svg className="w-12 h-12 text-gray-400 group-hover:text-teal-500 mx-auto mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <p className="text-sm font-medium text-gray-700 group-hover:text-teal-600">Take Live Photo</p>
+              <p className="text-xs text-gray-500 mt-1">Use your camera</p>
+            </button>
+          </div>
           <p className="text-xs text-gray-500 mt-2">Take a clear photo of your face for verification</p>
         </div>
+
+      {/* Fullscreen Camera Overlay */}
+      {showCamera && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col">
+          {/* Video fills entire screen */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="flex-1 w-full object-cover"
+            style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+          />
+          <canvas ref={canvasRef} className="hidden" />
+
+          {/* Face guide oval overlay */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-56 h-72 sm:w-64 sm:h-80 rounded-full border-4 border-white border-opacity-70" />
+          </div>
+
+          {/* Top bar */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-safe pt-4 pb-3 bg-gradient-to-b from-black/60 to-transparent">
+            <button
+              onClick={stopCamera}
+              className="bg-black/50 text-white rounded-full p-2"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <p className="text-white text-sm font-medium">Position your face in the oval</p>
+            {/* Flip camera button */}
+            <button
+              onClick={flipCamera}
+              className="bg-black/50 text-white rounded-full p-2"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Bottom capture button */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center pb-safe pb-8 pt-4 bg-gradient-to-t from-black/60 to-transparent">
+            <button
+              onClick={capturePhoto}
+              className="w-20 h-20 rounded-full bg-white border-4 border-teal-500 flex items-center justify-center shadow-xl active:scale-95 transition-transform"
+            >
+              <div className="w-14 h-14 rounded-full bg-teal-500" />
+            </button>
+          </div>
+        </div>
+      )}
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
