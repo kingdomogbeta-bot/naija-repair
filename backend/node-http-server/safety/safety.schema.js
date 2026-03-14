@@ -9,7 +9,7 @@ const safetyReportSchema = new mongoose.Schema({
   taskerName: String,
   type: { type: String, required: true },
   description: { type: String, required: true },
-  location: String,
+  location: { type: mongoose.Schema.Types.Mixed },
   status: { type: String, default: 'pending' },
   priority: { type: String, default: 'medium' },
   resolvedBy: String,

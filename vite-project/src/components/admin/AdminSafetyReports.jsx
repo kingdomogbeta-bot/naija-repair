@@ -121,13 +121,13 @@ export default function AdminSafetyReports() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-700">Reporter:</p>
-                    <p className="text-gray-900">{report.reporterEmail || report.taskerEmail}</p>
+                    <p className="text-gray-900">{report.userEmail || report.reporterEmail || report.taskerEmail}</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-700">Issue:</p>
-                    <p className="text-gray-900">{report.issue}</p>
+                    <p className="text-gray-900">{report.description || report.issue}</p>
                   </div>
-                  {report.location && (
+                  {report.location && typeof report.location === 'object' && (
                     <div>
                       <p className="text-sm font-semibold text-gray-700 mb-2">Location:</p>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 text-gray-900 flex-wrap">

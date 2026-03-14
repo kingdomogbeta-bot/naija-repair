@@ -79,12 +79,12 @@ export default function SafetyTracker({ booking, onClose }) {
     try {
       const token = getToken();
       await createSafetyReport(token, {
-        bookingId: booking.id,
+        bookingId: booking._id || booking.id,
         taskerId: booking.taskerId,
         taskerName: booking.taskerName,
         type: 'issue',
         description: reportText,
-        location: location ? `${location.lat},${location.lng}` : null
+        location: location ? { lat: location.lat, lng: location.lng } : null
       });
 
       alert('Report submitted. Admin will be notified.');
@@ -101,8 +101,8 @@ export default function SafetyTracker({ booking, onClose }) {
     try {
       const token = getToken();
       await sendEmergencyAlert(token, {
-        bookingId: booking.id,
-        location: location ? `${location.lat},${location.lng}` : booking.location,
+        bookingId: booking._id || booking.id,
+        location: location ? { lat: location.lat, lng: location.lng } : null,
         message: 'EMERGENCY - User triggered panic button'
       });
 

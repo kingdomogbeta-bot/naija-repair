@@ -76,7 +76,7 @@ exports.sendEmergencyAlert = async (req, res) => {
       description: message || 'Emergency alert triggered',
       location,
       priority: 'high',
-      status: 'urgent'
+      status: 'emergency'
     });
     
     if (global.io) {
