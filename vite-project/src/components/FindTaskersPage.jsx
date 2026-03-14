@@ -44,11 +44,11 @@ export default function FindTaskersPage() {
       const b = selectedService.toString().toLowerCase().trim();
       return a === b || a.includes(b) || b.includes(a);
     });
-    const matchesRating = tasker.rating >= (settings.minTaskerRating || minRating);
+    // New real taskers have rating 0 — don't filter them out by rating
+    const effectiveMinRating = tasker.isBackendTasker && tasker.reviewCount === 0 ? 0 : (settings.minTaskerRating || minRating);
+    const matchesRating = tasker.rating >= effectiveMinRating;
     const notSuspended = !tasker.suspended;
-    
-    // Virtual taskers always show; backend taskers show as long as not suspended
-    const isApproved = !tasker.isBackendTasker || !tasker.suspended;
+    const isApproved = true; // show all non-suspended taskers
     
     let matchesPrice = true;
     if (priceRange === 'low') matchesPrice = tasker.hourlyRate < 3000;

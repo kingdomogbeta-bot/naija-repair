@@ -21,7 +21,7 @@ export default function TaskerProfile() {
   const [messageText, setMessageText] = useState('');
   const [taskerReviews, setTaskerReviews] = useState([]);
 
-  const tasker = taskers.find(t => t.id === id);
+  const tasker = taskers.find(t => t.id === id || t._id === id);
   const isTaskerFavorite = isFavorite(id);
 
   useEffect(() => {
