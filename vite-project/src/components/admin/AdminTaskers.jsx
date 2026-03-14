@@ -141,8 +141,7 @@ export default function AdminTaskers() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-blue-600 font-medium">Total Taskers</p>
             <p className="text-2xl font-bold text-blue-900">{allTaskers.length}</p>
@@ -151,9 +150,9 @@ export default function AdminTaskers() {
             <p className="text-sm text-green-600 font-medium">Active</p>
             <p className="text-2xl font-bold text-green-900">{allTaskers.filter(t => !t.suspended).length}</p>
           </div>
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <p className="text-sm text-yellow-600 font-medium">Verified</p>
-            <p className="text-2xl font-bold text-yellow-900">{allTaskers.filter(t => t.verified).length}</p>
+          <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
+            <p className="text-sm text-yellow-700 font-medium">⏳ Pending NIN</p>
+            <p className="text-2xl font-bold text-yellow-900">{allTaskers.filter(t => t.verificationStatus === 'pending').length}</p>
           </div>
           <div className="bg-red-50 p-4 rounded-lg">
             <p className="text-sm text-red-600 font-medium">Suspended</p>
@@ -194,6 +193,15 @@ export default function AdminTaskers() {
             } ${
               !tasker._id && !tasker.isBackendTasker ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50' : ''
             }`}>
+              {/* Pending NIN review banner - full width, very visible */}
+              {tasker.verificationStatus === 'pending' && (
+                <div className="bg-yellow-400 text-yellow-900 px-4 py-2 flex items-center gap-2 font-semibold text-sm">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                  ⏳ NIN Submitted — Awaiting Review
+                </div>
+              )}
               {/* Header with Photo and Basic Info */}
               <div className="relative p-6 pb-4">
                 <div className="flex items-start gap-4">

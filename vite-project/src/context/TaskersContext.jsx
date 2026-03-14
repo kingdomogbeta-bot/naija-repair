@@ -5,10 +5,11 @@ import { buildApiUrl } from '../config/api';
 const TaskersContext = createContext();
 
 const STORAGE_KEY = 'naija_taskers';
-const normalizeTaskerPhoto = (tasker) => ({
-  ...tasker,
-  photoUrl: resolveTaskerPhoto(tasker),
-});
+const normalizeTaskerPhoto = (tasker) => {
+  // Preserve real uploaded photo from backend — only use fallback if no real photo
+  if (tasker.photoUrl && tasker.photoUrl.trim().length > 0) return tasker;
+  return { ...tasker, photoUrl: resolveTaskerPhoto(tasker) };
+};
 
 // Sample taskers data
 const initialTaskers = [

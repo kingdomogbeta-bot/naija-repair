@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTaskers } from '../context/TaskersContext';
 
 export default function TaskerVerification({ tasker, onSuccess }) {
-  const { getToken } = useAuth();
+  const { getToken, updateProfile } = useAuth();
   const { refreshTaskers } = useTaskers();
   const [showForm, setShowForm] = useState(false);
   const [nin, setNin] = useState('');
@@ -135,7 +135,8 @@ export default function TaskerVerification({ tasker, onSuccess }) {
         return;
       }
       await submitTaskerVerification(token, nin, ninPhoto, livePhoto);
-      alert('Verification submitted successfully!');
+      // Update local user state so UI shows "Under Review" immediately
+      updateProfile({ verificationStatus: 'pending' });
       setShowForm(false);
       await refreshTaskers();
       if (onSuccess) await onSuccess();
