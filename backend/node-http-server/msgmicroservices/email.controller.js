@@ -29,16 +29,58 @@ exports.sendOTP = async (req, res) => {
     await transporter.sendMail({
       from: '"Naija Repair" <kingdomogbeta@gmail.com>',
       to: email,
-      subject: 'Naija-Repair Verification Code',
+      subject: 'Your Naija Repair Verification Code',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">Naija-Repair Verification</h2>
-          <p>Your verification code is:</p>
-          <div style="background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
-            <h1 style="color: #0d9488; font-size: 36px; margin: 0; letter-spacing: 8px;">${otp}</h1>
-          </div>
-          <p style="color: #666;">This code expires in 10 minutes.</p>
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <body style="margin:0;padding:0;background-color:#f0fdfa;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding:40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(13,148,136,0.10);">
+                  
+                  <!-- Header -->
+                  <tr>
+                    <td style="background:linear-gradient(135deg,#14b8a6 0%,#0d9488 100%);padding:36px 40px;text-align:center;">
+                      <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;">🔧 Naija Repair</h1>
+                      <p style="margin:8px 0 0;color:#ccfbf1;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Verification Code</p>
+                    </td>
+                  </tr>
+
+                  <!-- Body -->
+                  <tr>
+                    <td style="padding:40px;">
+                      <p style="margin:0 0 24px;color:#134e4a;font-size:16px;text-align:center;">Use the code below to verify your account. It expires in <strong>10 minutes</strong>.</p>
+                      
+                      <!-- OTP Box -->
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td align="center">
+                            <div style="display:inline-block;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border:2px solid #14b8a6;border-radius:12px;padding:28px 48px;margin:8px 0;">
+                              <p style="margin:0 0 6px;color:#0d9488;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Your OTP</p>
+                              <p style="margin:0;color:#0d9488;font-size:44px;font-weight:900;letter-spacing:12px;font-family:'Courier New',monospace;">${otp}</p>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <p style="margin:24px 0 0;color:#6b7280;font-size:13px;text-align:center;">If you didn't request this, please ignore this email.</p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="background:#f0fdfa;padding:20px 40px;text-align:center;border-top:1px solid #99f6e4;">
+                      <p style="margin:0;color:#0d9488;font-size:12px;">© 2024 Naija Repair · Your trusted repair platform in Nigeria</p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `
     });
 
