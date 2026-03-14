@@ -17,7 +17,7 @@ export default function AdminBookings() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch('http://localhost:5000/api/bookings/all', {
+      const response = await fetch('https://naija-repair-api.onrender.com/api/bookings/all', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -257,7 +257,7 @@ export default function AdminBookings() {
                           <div className="flex items-center gap-2">
                             {booking.taskerPhoto && booking.taskerPhoto !== 'undefined' && booking.taskerPhoto !== '' ? (
                               <img 
-                                src={booking.taskerPhoto.startsWith('http') ? booking.taskerPhoto : `http://localhost:5000${booking.taskerPhoto}`} 
+                                src={booking.taskerPhoto.startsWith('http') ? booking.taskerPhoto : `https://naija-repair-api.onrender.com${booking.taskerPhoto}`} 
                                 alt={booking.taskerName} 
                                 className="w-8 h-8 rounded-full object-cover" 
                                 onError={(e) => { 
@@ -368,7 +368,7 @@ export default function AdminBookings() {
                     <div className="flex items-start gap-3">
                       {selectedBooking.taskerPhoto && selectedBooking.taskerPhoto !== 'undefined' && selectedBooking.taskerPhoto !== '' ? (
                         <img 
-                          src={selectedBooking.taskerPhoto.startsWith('http') ? selectedBooking.taskerPhoto : `http://localhost:5000${selectedBooking.taskerPhoto}`} 
+                          src={selectedBooking.taskerPhoto.startsWith('http') ? selectedBooking.taskerPhoto : `https://naija-repair-api.onrender.com${selectedBooking.taskerPhoto}`} 
                           alt={selectedBooking.taskerName} 
                           className="w-12 h-12 rounded-full object-cover" 
                         />
