@@ -12,11 +12,12 @@ export default function PaystackPayment({ booking, onSuccess }) {
     setLoading(true);
 
     const handler = window.PaystackPop.setup({
-      key: 'pk_test_your_public_key_here',
+      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_4e78c5f7ccb3d61314c7748211ef23f89956166f',
       email: booking.createdByEmail,
       amount: booking.totalPrice * 100,
       currency: 'NGN',
       ref: `NAIJA-${Date.now()}`,
+      callback_url: 'https://naija-repair-rd5j.onrender.com/payment/verify',
       metadata: {
         custom_fields: [
           {
