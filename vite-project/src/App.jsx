@@ -55,25 +55,22 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAdmin = user?.role === 'admin';
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [checkingMaintenance, setCheckingMaintenance] = useState(false);
-
-  useEffect(() => {
-    checkMaintenanceMode();
-  }, []);
 
   const checkMaintenanceMode = async () => {
     try {
       const response = await fetch('https://naija-repair-api.onrender.com/api/settings/maintenanceMode');
       const data = await response.json();
-      if (data.success && data.value === true) {
-        setMaintenanceMode(true);
-      }
+      setMaintenanceMode(data.success && data.value === true);
     } catch (error) {
       console.error('Failed to check maintenance mode:', error);
-    } finally {
-      setCheckingMaintenance(false);
     }
   };
+
+  useEffect(() => {
+    checkMaintenanceMode();
+    const interval = setInterval(checkMaintenanceMode, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
