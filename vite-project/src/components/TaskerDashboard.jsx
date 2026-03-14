@@ -46,7 +46,7 @@ export default function TaskerDashboard() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/start`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/start`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -73,7 +73,7 @@ export default function TaskerDashboard() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/tasker-complete`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/tasker-complete`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,7 +102,7 @@ export default function TaskerDashboard() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/decline`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/decline`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -133,7 +133,7 @@ export default function TaskerDashboard() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/decline`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/decline`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
