@@ -79,19 +79,10 @@ function AppContent() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  if (checkingMaintenance) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   const publicRoutes = ['/login', '/signup', '/'];
-  const isPublicRoute = publicRoutes.includes(location.pathname);
+  const isPublicRoute = publicRoutes.includes(location.pathname) || location.pathname.startsWith('/payment');
 
   if (maintenanceMode && !isAdmin && !isPublicRoute) {
     return <MaintenancePage />;
