@@ -42,7 +42,7 @@ exports.initializePayment = async (req, res) => {
       email,
       amount: amount * 100,
       reference,
-      callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/verify`,
+      callback_url: `${process.env.FRONTEND_URL || 'https://naija-repair-rd5j.onrender.com'}/payment/verify`,
       metadata: { bookingId, userId, taskerId, ...metadata }
     };
 
@@ -156,7 +156,7 @@ exports.verifyPayment = async (req, res) => {
 
         // Credit tasker wallet
         try {
-          await axios.post('http://localhost:5000/api/wallet/credit', {
+          await axios.post(`${process.env.BACKEND_URL || 'https://naija-repair-api.onrender.com'}/api/wallet/credit`, {
             taskerEmail: payment.taskerId,
             amount: payment.amount,
             bookingId: payment.bookingId,
