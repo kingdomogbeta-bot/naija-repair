@@ -63,7 +63,7 @@ function AppContent() {
 
   const checkMaintenanceMode = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/maintenanceMode');
+      const response = await fetch('https://naija-repair-api.onrender.com/api/settings/maintenanceMode');
       const data = await response.json();
       if (data.success && data.value === true) {
         setMaintenanceMode(true);
