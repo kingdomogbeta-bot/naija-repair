@@ -35,7 +35,6 @@ export default function TaskerVerification({ tasker, onSuccess }) {
 
   const startCamera = useCallback(async (mode = facingMode) => {
     setError('');
-    // Stop any existing stream first
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -48,11 +47,11 @@ export default function TaskerVerification({ tasker, onSuccess }) {
           facingMode: mode
         } 
       });
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.onloadedmetadata = () => videoRef.current.play();
       }
-      streamRef.current = stream;
       setShowCamera(true);
     } catch (err) {
       console.error('Camera error:', err);
@@ -316,7 +315,6 @@ export default function TaskerVerification({ tasker, onSuccess }) {
             playsInline
             muted
             className="flex-1 w-full object-cover"
-            style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
           />
           <canvas ref={canvasRef} className="hidden" />
 
