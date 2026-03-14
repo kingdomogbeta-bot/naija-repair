@@ -196,7 +196,7 @@ export default function TaskerProfile() {
                                 ))}
                               </div>
                             </div>
-                            <p className="text-gray-700">{review.comment}</p>
+                            {review.comment && <p className="text-gray-700">{review.comment}</p>}
                           </div>
                         </div>
                       </div>

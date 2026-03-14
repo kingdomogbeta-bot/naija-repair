@@ -6,8 +6,8 @@ exports.createReview = async (req, res) => {
   try {
     const { bookingId, taskerId, taskerEmail, rating, comment, service } = req.body;
 
-    if (!bookingId || !taskerId || !rating || !comment) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!bookingId || !taskerId || !rating) {
+      return res.status(400).json({ message: 'Booking, tasker and rating are required' });
     }
 
     if (rating < 1 || rating > 5) {
