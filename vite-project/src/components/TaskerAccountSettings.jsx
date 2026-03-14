@@ -121,10 +121,9 @@ function ProfileSection({ user, currentTasker, updateProfile, updateTasker, upda
       const token = getToken();
       const result = await uploadTaskerPhoto(token, file);
       if (result.success) {
-        const fullPhotoUrl = `https://naija-repair-api.onrender.com${result.photoUrl}`;
-        updateTasker(user.email, { photoUrl: fullPhotoUrl });
-        updatePhoto(fullPhotoUrl);
-        setPhotoPreview(fullPhotoUrl);
+        updateTasker(user.email, { photoUrl: result.photoUrl });
+        updatePhoto(result.photoUrl);
+        setPhotoPreview(result.photoUrl);
       }
     } catch (error) {
       alert(error.message || 'Failed to upload photo');

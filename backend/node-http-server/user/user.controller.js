@@ -247,7 +247,7 @@ exports.uploadPhoto = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const photoUrl = `/uploads/${req.file.filename}`;
+    const photoUrl = req.file.path;
     const userId = req.user._id || req.user.id;
     const user = await User.findByIdAndUpdate(
       userId,

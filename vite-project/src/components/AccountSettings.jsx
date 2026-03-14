@@ -120,9 +120,8 @@ function ProfileSection({ user, updateProfile, updatePhoto, deletePhoto, onSave,
       const token = getToken();
       const result = await uploadUserPhoto(token, file);
       if (result.success) {
-        const fullPhotoUrl = `https://naija-repair-api.onrender.com${result.photoUrl}`;
-        updatePhoto(fullPhotoUrl);
-        setPhotoPreview(fullPhotoUrl);
+        updatePhoto(result.photoUrl);
+        setPhotoPreview(result.photoUrl);
       }
     } catch (error) {
       alert(error.message || 'Failed to upload photo');
