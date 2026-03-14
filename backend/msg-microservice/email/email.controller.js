@@ -1,32 +1,20 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const OTP = require('./otp.schema');
 
-console.log('🔥 EMAIL CONTROLLER LOADED - GMAIL WITH NEW PASSWORD');
+console.log('🔥 EMAIL CONTROLLER LOADED - USING RESEND');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Gmail transporter with explicit SMTP
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAILSECRET
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_FROM = process.env.RESEND_FROM || 'Naija Repair <onboarding@resend.dev>';
 
-// Test connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email transporter error:', error.message);
-  } else {
-    console.log('✅ Email server is ready to send messages');
-  }
-});
+// Test Resend connection on startup
+if (process.env.RESEND_API_KEY) {
+  console.log('✅ Resend API key configured');
+} else {
+  console.error('❌ RESEND_API_KEY not found in environment variables');
+}
 
 exports.sendOTP = async (req, res) => {
   try {
@@ -39,46 +27,61 @@ exports.sendOTP = async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     
-    console.log('\n=== OTP GENERATED ===');
-    console.log('Email:', email);
-    console.log('OTP:', otp);
-    console.log('====================\n');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\n=== OTP GENERATED ===');
+      console.log('Email:', email);
+      console.log('OTP:', otp);
+      console.log('====================\n');
+    }
 
     // Save to database
     await OTP.deleteMany({ email });
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
 
-    console.log('📧 SENDING EMAIL TO:', email);
-    console.log('🔑 Using email:', process.env.EMAIL);
-    console.log('🔐 App password length:', process.env.EMAILSECRET ? process.env.EMAILSECRET.length : 'NOT SET');
-
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Naija-Repair Verification Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">Naija-Repair Verification</h2>
-          <p style="font-size: 16px;">Your verification code is:</p>
-          <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
-            <h1 style="color: #007bff; font-size: 36px; margin: 0; letter-spacing: 4px;">${otp}</h1>
-          </div>
-          <p style="color: #666;">This code will expire in 10 minutes.</p>
-          <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
-        </div>
-      `
-    };
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('📧 SENDING EMAIL VIA RESEND TO:', email);
+    }
 
     try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log('✅ EMAIL SENT SUCCESSFULLY!');
-      console.log('📨 Message ID:', info.messageId);
-      console.log('📤 Response:', info.response);
+      const { data, error } = await resend.emails.send({
+        from: RESEND_FROM,
+        to: [email],
+        subject: 'Naija-Repair Verification Code',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #333; text-align: center;">Naija-Repair Verification</h2>
+            <p style="font-size: 16px;">Your verification code is:</p>
+            <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #007bff; font-size: 36px; margin: 0; letter-spacing: 4px;">${otp}</h1>
+            </div>
+            <p style="color: #666;">This code will expire in 10 minutes.</p>
+            <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error('RESEND ERROR:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('OTP available in logs:', otp);
+        }
+        return res.status(500).json({ 
+          message: 'Failed to send email, please try again later.'
+        });
+      }
+
+      console.log('✅ EMAIL SENT SUCCESSFULLY VIA RESEND!');
+      console.log('📨 Email ID:', data.id);
+      
     } catch (emailError) {
-      console.error('❌ EMAIL SENDING ERROR:', emailError.message);
-      console.error('❌ Full error:', emailError);
-      console.log('🔑 OTP available in logs:', otp);
+      console.error('EMAIL SENDING ERROR:', emailError.message);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('OTP available in logs:', otp);
+      }
+      return res.status(500).json({ 
+        message: 'Failed to send email, please try again later.'
+      });
     }
 
     res.json({ message: 'OTP sent successfully' });

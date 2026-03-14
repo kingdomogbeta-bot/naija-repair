@@ -36,9 +36,7 @@ services:
         value: production
       - key: DBSTRING
         sync: false
-      - key: EMAIL
-        sync: false
-      - key: EMAILSECRET
+      - key: RESEND_API_KEY
         sync: false
 
   # Frontend

@@ -10,7 +10,12 @@ const app = express();
 
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
-const DBSTRING = process.env.DBSTRING || 'mongodb+srv://kingnice7755_db_user:89RwvsHRBDXDNiVA@cluster0.hayypiv.mongodb.net/Naija-Repair?retryWrites=true&w=majority&appName=Cluster0';
+const DBSTRING = process.env.DBSTRING;
+
+if (!DBSTRING) {
+  console.error('DBSTRING is not set in environment variables');
+  process.exit(1);
+}
 
 mongoose.connect(DBSTRING, {
   serverSelectionTimeoutMS: 30000,
