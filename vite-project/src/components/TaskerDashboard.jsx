@@ -23,7 +23,7 @@ export default function TaskerDashboard() {
       try {
         const token = getToken();
         if (token) {
-          const response = await fetch('http://localhost:5000/api/taskers/me', {
+          const response = await fetch('https://naija-repair-api.onrender.com/api/taskers/me', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {
@@ -189,15 +189,8 @@ export default function TaskerDashboard() {
         {showVerificationBanner && (
           <div className="mb-6">
             <TaskerVerification tasker={currentTasker} onSuccess={async () => {
+              setCurrentTasker(prev => ({ ...prev, verificationStatus: 'pending' }));
               await refreshTaskers();
-              const token = getToken();
-              const response = await fetch('http://localhost:5000/api/taskers/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (response.ok) {
-                const data = await response.json();
-                setCurrentTasker(data);
-              }
             }} />
           </div>
         )}
