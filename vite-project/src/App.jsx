@@ -55,7 +55,7 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAdmin = user?.role === 'admin';
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [checkingMaintenance, setCheckingMaintenance] = useState(true);
+  const [checkingMaintenance, setCheckingMaintenance] = useState(false);
 
   useEffect(() => {
     checkMaintenanceMode();
