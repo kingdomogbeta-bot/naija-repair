@@ -419,36 +419,82 @@ function NotificationsSection({ onSave, saved }) {
 }
 
 function BalanceSection() {
+  const { user, getToken } = useAuth();
+  const [wallet, setWallet] = useState(null);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        const token = getToken();
+        const res = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) setWallet(data.data);
+      } catch (err) {
+        console.error('Fetch wallet error:', err);
+      }
+    };
+    fetchWallet();
+  }, []);
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Balance</h2>
-      <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white mb-6">
+      <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white mb-4">
         <p className="text-sm opacity-90 mb-2">Available Balance</p>
-        <p className="text-4xl font-bold">₦0.00</p>
+        <p className="text-4xl font-bold">₦{wallet?.balance?.toLocaleString() || '0'}</p>
       </div>
-      <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Withdraw Funds</button>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-gray-50 rounded-xl p-4">
+          <p className="text-sm text-gray-600">Total Earnings</p>
+          <p className="text-xl font-bold text-gray-900">₦{wallet?.totalEarnings?.toLocaleString() || '0'}</p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-4">
+          <p className="text-sm text-gray-600">Total Withdrawals</p>
+          <p className="text-xl font-bold text-gray-900">₦{wallet?.totalWithdrawals?.toLocaleString() || '0'}</p>
+        </div>
+      </div>
+      <button onClick={() => window.location.href = '/tasker-wallet'} className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Manage Wallet</button>
     </div>
   );
 }
 
 function TransactionsSection() {
-  const transactions = [
-    { id: 1, date: '2024-01-15', description: 'Earnings from Plumbing Job', amount: 15000, status: 'completed' },
-    { id: 2, date: '2024-01-10', description: 'Earnings from Cleaning Job', amount: 8000, status: 'completed' },
-  ];
+  const { user, getToken } = useAuth();
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = getToken();
+        const res = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}/transactions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) setTransactions(data.data);
+      } catch (err) {
+        console.error('Fetch transactions error:', err);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Transaction History</h2>
       <div className="space-y-3">
+        {transactions.length === 0 && <p className="text-gray-500 text-center py-8">No transactions yet</p>}
         {transactions.map(t => (
-          <div key={t.id} className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl">
+          <div key={t._id} className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl">
             <div>
               <p className="font-medium text-gray-900">{t.description}</p>
-              <p className="text-sm text-gray-600">{new Date(t.date).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-600">{new Date(t.createdAt).toLocaleDateString()}</p>
             </div>
             <div className="text-right">
-              <p className="font-bold text-green-600">+₦{t.amount.toLocaleString()}</p>
+              <p className={`font-bold ${t.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                {t.type === 'credit' ? '+' : '-'}₦{t.amount.toLocaleString()}
+              </p>
               <p className="text-sm text-gray-600">{t.status}</p>
             </div>
           </div>
