@@ -171,6 +171,70 @@ exports.processWithdrawal = async (req, res) => {
   }
 };
 
+exports.migrateHistoricPayments = async (req, res) => {
+  try {
+    const Payment = require('../payment/payment.schema');
+    const Tasker = require('../tasker/tasker.schema');
+
+    const commissionSetting = await Settings.findOne({ key: 'commissionRate' });
+    const commissionRate = commissionSetting ? (commissionSetting.value / 100) : 0.15;
+
+    // Only process successful payments that have no existing transaction record
+    const payments = await Payment.find({ status: 'success' });
+
+    let processed = 0;
+    let skipped = 0;
+
+    for (const payment of payments) {
+      // Skip if already processed (transaction exists for this reference)
+      const existing = await Transaction.findOne({ paymentReference: payment.reference });
+      if (existing) { skipped++; continue; }
+
+      // Look up tasker email
+      const tasker = await Tasker.findById(payment.taskerId).select('email');
+      if (!tasker) { skipped++; continue; }
+
+      const commission = Math.round(payment.amount * commissionRate);
+      const taskerAmount = payment.amount - commission;
+
+      // Credit tasker wallet
+      let wallet = await Wallet.findOne({ taskerEmail: tasker.email });
+      if (!wallet) wallet = new Wallet({ taskerEmail: tasker.email, balance: 0, totalEarnings: 0 });
+
+      const balanceBefore = wallet.balance;
+      wallet.balance += taskerAmount;
+      wallet.totalEarnings += taskerAmount;
+      await wallet.save();
+
+      await Transaction.create({
+        taskerEmail: tasker.email,
+        type: 'credit',
+        amount: taskerAmount,
+        description: `Migrated payment for booking ${payment.bookingId}`,
+        bookingId: payment.bookingId,
+        paymentReference: payment.reference,
+        balanceBefore,
+        balanceAfter: wallet.balance
+      });
+
+      // Update admin earnings
+      let adminEarnings = await AdminEarnings.findOne({ key: 'platform' });
+      if (!adminEarnings) adminEarnings = new AdminEarnings({ key: 'platform', totalCommission: 0, totalTransactions: 0 });
+      adminEarnings.totalCommission += commission;
+      adminEarnings.totalTransactions += 1;
+      adminEarnings.lastUpdated = new Date();
+      await adminEarnings.save();
+
+      processed++;
+    }
+
+    res.json({ success: true, processed, skipped, commissionRate: commissionRate * 100 });
+  } catch (error) {
+    console.error('Migration error:', error.message);
+    res.status(500).json({ error: 'Migration failed', details: error.message });
+  }
+};
+
 exports.getAdminEarnings = async (req, res) => {
   try {
     const earnings = await AdminEarnings.findOne({ key: 'platform' });

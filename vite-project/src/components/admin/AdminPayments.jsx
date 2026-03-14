@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllPaymentsAdmin, getAdminEarnings, getAllSettings } from '../../services/api';
+import { getAllPaymentsAdmin, getAdminEarnings, getAllSettings, migrateHistoricPayments } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminPayments() {
@@ -7,9 +7,27 @@ export default function AdminPayments() {
   const [payments, setPayments] = useState([]);
   const [adminEarnings, setAdminEarnings] = useState({ totalCommission: 0, totalTransactions: 0 });
   const [commissionRate, setCommissionRate] = useState(15);
+  const [migrating, setMigrating] = useState(false);
+  const [migrateResult, setMigrateResult] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const handleMigrate = async () => {
+    if (!window.confirm('This will process all past successful payments and credit tasker wallets + admin earnings for any unprocessed ones. Continue?')) return;
+    setMigrating(true);
+    setMigrateResult(null);
+    try {
+      const res = await migrateHistoricPayments(getToken());
+      setMigrateResult(res);
+      // Refresh earnings after migration
+      const earningsRes = await getAdminEarnings(getToken());
+      setAdminEarnings(earningsRes.data || { totalCommission: 0, totalTransactions: 0 });
+    } catch (e) {
+      setMigrateResult({ error: e.message });
+    } finally {
+      setMigrating(false);
+    }
+  };
     const load = async () => {
       try {
         const token = getToken();
@@ -39,9 +57,25 @@ export default function AdminPayments() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">Payments</h2>
-        <p className="text-gray-600">All transactions — commission rate: <span className="font-semibold text-teal-600">{commissionRate}%</span></p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Payments</h2>
+          <p className="text-gray-600">All transactions — commission rate: <span className="font-semibold text-teal-600">{commissionRate}%</span></p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <button
+            onClick={handleMigrate}
+            disabled={migrating}
+            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white rounded-lg font-semibold text-sm"
+          >
+            {migrating ? 'Processing...' : '⚡ Process Past Payments'}
+          </button>
+          {migrateResult && (
+            migrateResult.error
+              ? <p className="text-xs text-red-600">{migrateResult.error}</p>
+              : <p className="text-xs text-green-600">✓ {migrateResult.processed} processed, {migrateResult.skipped} already done</p>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
