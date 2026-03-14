@@ -322,7 +322,7 @@ export default function TaskerVerification({ tasker, onSuccess }) {
 
           {/* Face guide oval overlay */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-56 h-72 sm:w-64 sm:h-80 rounded-full border-4 border-white border-opacity-70" />
+            <div className="w-72 h-96 sm:w-80 sm:h-[420px] rounded-full border-4 border-white border-opacity-70" />
           </div>
 
           {/* Top bar */}
