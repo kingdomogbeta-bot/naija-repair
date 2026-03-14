@@ -48,8 +48,8 @@ export function AuthProvider({ children }) {
       const token = getToken();
       if (token && user) {
         const endpoint = user.role === 'tasker' 
-          ? 'http://localhost:5000/api/taskers/profile'
-          : 'http://localhost:5000/api/users/profile';
+          ? 'https://naija-repair-api.onrender.com/api/taskers/profile'
+          : 'https://naija-repair-api.onrender.com/api/users/profile';
         
         const response = await fetch(endpoint, {
           method: 'PUT',

@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }) => {
         socket.close();
       }
 
-      const newSocket = io('http://localhost:5000', {
+      const newSocket = io('https://naija-repair-api.onrender.com', {
         query: { userId: userId },
         forceNew: true
       });
