@@ -17,7 +17,8 @@ export default function AdminSafetyReports() {
     try {
       const token = getToken();
       const data = await getAllSafetyReports(token);
-      setReports(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      const reports = data.data || data;
+      setReports(reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (error) {
       console.error('Failed to load reports:', error);
     } finally {

@@ -139,6 +139,44 @@ exports.deleteMessage = async (req, res) => {
   }
 };
 
+exports.getAllMessagesAdmin = async (req, res) => {
+  try {
+    const messages = await Message.find().sort({ createdAt: -1 });
+
+    const conversationsMap = new Map();
+    messages.forEach(msg => {
+      if (!conversationsMap.has(msg.conversationId)) {
+        conversationsMap.set(msg.conversationId, {
+          conversationId: msg.conversationId,
+          participants: [
+            { id: msg.senderId, name: msg.senderName, email: msg.senderEmail },
+            { id: msg.receiverId, name: msg.receiverName, email: msg.receiverEmail }
+          ],
+          lastMessage: msg.message,
+          lastMessageTime: msg.createdAt,
+          messages: []
+        });
+      }
+    });
+
+    // Attach messages in chronological order per conversation
+    const msgsByConv = new Map();
+    [...messages].reverse().forEach(msg => {
+      if (!msgsByConv.has(msg.conversationId)) msgsByConv.set(msg.conversationId, []);
+      msgsByConv.get(msg.conversationId).push(msg);
+    });
+
+    const conversations = Array.from(conversationsMap.values()).map(conv => ({
+      ...conv,
+      messages: msgsByConv.get(conv.conversationId) || []
+    }));
+
+    res.json({ success: true, data: conversations });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getUnreadCount = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user.id;

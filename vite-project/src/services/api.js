@@ -501,6 +501,15 @@ export const deleteMessage = async (token, messageId) => {
   return data;
 };
 
+export const getAllMessagesAdmin = async (token) => {
+  const response = await fetch(`${API_URL}/messages/admin/all`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch messages');
+  return data;
+};
+
 export const getUnreadMessageCount = async (token) => {
   const response = await fetch(`${API_URL}/messages/unread-count`, {
     headers: { 
