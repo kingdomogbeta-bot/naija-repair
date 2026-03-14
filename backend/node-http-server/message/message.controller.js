@@ -141,7 +141,11 @@ exports.deleteMessage = async (req, res) => {
 
 exports.getAllMessagesAdmin = async (req, res) => {
   try {
-    const messages = await Message.find().sort({ createdAt: -1 });
+    const adminEmail = process.env.EMAIL;
+    const messages = await Message.find({
+      senderEmail: { $ne: adminEmail },
+      receiverEmail: { $ne: adminEmail }
+    }).sort({ createdAt: -1 });
 
     const conversationsMap = new Map();
     messages.forEach(msg => {
