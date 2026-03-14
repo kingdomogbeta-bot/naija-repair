@@ -120,13 +120,13 @@ function ProfileSection({ user, updateProfile, updatePhoto, deletePhoto, onSave,
       const token = getToken();
       const result = await uploadUserPhoto(token, file);
       if (result.success) {
-        const fullPhotoUrl = `http://localhost:5000${result.photoUrl}`;
+        const fullPhotoUrl = `https://naija-repair-api.onrender.com${result.photoUrl}`;
         updatePhoto(fullPhotoUrl);
         setPhotoPreview(fullPhotoUrl);
-        alert('Photo uploaded successfully!');
       }
     } catch (error) {
       alert(error.message || 'Failed to upload photo');
+      setPhotoPreview(user?.photoUrl || '');
     } finally {
       setUploading(false);
     }
@@ -143,10 +143,8 @@ function ProfileSection({ user, updateProfile, updatePhoto, deletePhoto, onSave,
         deletePhoto();
         setPhotoPreview('');
         setShowPhotoModal(false);
-        alert('Photo deleted successfully!');
       }
     } catch (error) {
-      console.error('Error deleting photo:', error);
       alert('Failed to delete photo: ' + error.message);
     } finally {
       setDeleting(false);

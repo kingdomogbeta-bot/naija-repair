@@ -121,14 +121,14 @@ function ProfileSection({ user, currentTasker, updateProfile, updateTasker, upda
       const token = getToken();
       const result = await uploadTaskerPhoto(token, file);
       if (result.success) {
-        const fullPhotoUrl = `http://localhost:5000${result.photoUrl}`;
+        const fullPhotoUrl = `https://naija-repair-api.onrender.com${result.photoUrl}`;
         updateTasker(user.email, { photoUrl: fullPhotoUrl });
         updatePhoto(fullPhotoUrl);
         setPhotoPreview(fullPhotoUrl);
-        alert('Photo uploaded successfully!');
       }
     } catch (error) {
       alert(error.message || 'Failed to upload photo');
+      setPhotoPreview(currentTasker?.photoUrl || '');
     } finally {
       setUploading(false);
     }
@@ -146,10 +146,8 @@ function ProfileSection({ user, currentTasker, updateProfile, updateTasker, upda
         deletePhoto();
         setPhotoPreview('');
         setShowPhotoModal(false);
-        alert('Photo deleted successfully!');
       }
     } catch (error) {
-      console.error('Error deleting photo:', error);
       alert('Failed to delete photo: ' + error.message);
     } finally {
       setDeleting(false);
