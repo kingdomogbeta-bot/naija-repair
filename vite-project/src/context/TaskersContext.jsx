@@ -4,9 +4,7 @@ import { buildApiUrl } from '../config/api';
 
 const TaskersContext = createContext();
 
-const STORAGE_KEY = 'naija_taskers';
 const normalizeTaskerPhoto = (tasker) => {
-  // Preserve real uploaded photo from backend — only use fallback if no real photo
   if (tasker.photoUrl && tasker.photoUrl.trim().length > 0) return tasker;
   return { ...tasker, photoUrl: resolveTaskerPhoto(tasker) };
 };
@@ -440,75 +438,36 @@ export function TaskersProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    localStorage.removeItem('naija_taskers'); // clear stale cached data
     loadTaskers();
   }, []);
 
   const loadTaskers = async () => {
     try {
-      const localTaskers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      console.log(`Local storage has ${localTaskers.length} taskers`);
-      
-      try {
-        const timestamp = new Date().getTime();
-        // Use includeUnapproved=true to get ALL taskers for the context
-        const endpoint = buildApiUrl('/taskers/all?includeUnapproved=true');
-        
-        console.log('Fetching ALL taskers from backend (including unapproved)...');
-        const response = await fetch(`${endpoint}&t=${timestamp}`, {
-          cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (response.ok) {
-          const backendTaskers = await response.json();
-          console.log(`Loaded ${backendTaskers.length} taskers from backend:`);
-          console.log('Backend taskers:', backendTaskers.map(t => ({ id: t._id, name: t.name, email: t.email, approved: t.approved, suspended: t.suspended })));
-          
-          const processedBackendTaskers = backendTaskers.map(t => ({ ...t, id: t._id, isBackendTasker: true }));
-          const filteredLocalTaskers = localTaskers.filter(lt => 
-            !backendTaskers.find(bt => bt.email === lt.email) &&
-            !initialTaskers.find(it => it.email === lt.email)
-          );
-          
-          const mergedTaskers = [
-            ...initialTaskers,
-            ...processedBackendTaskers,
-            ...filteredLocalTaskers
-          ];
-          
-          console.log(`Total merged taskers: ${mergedTaskers.length} (${initialTaskers.length} virtual + ${backendTaskers.length} backend + ${filteredLocalTaskers.length} local)`);
-          console.log('All merged taskers:', mergedTaskers.map(t => ({ id: t.id, name: t.name, isBackend: !!t.isBackendTasker, approved: t.approved, suspended: t.suspended })));
-          setTaskers(mergedTaskers.map(normalizeTaskerPhoto));
-        } else {
-          console.log('Backend not available, using local data');
-          const mergedTaskers = [...initialTaskers, ...localTaskers];
-          setTaskers(mergedTaskers.map(normalizeTaskerPhoto));
-        }
-      } catch (error) {
-        console.error('Backend fetch error:', error);
-        const mergedTaskers = localTaskers.length > 0 ? [...initialTaskers, ...localTaskers] : initialTaskers;
-        setTaskers(mergedTaskers.map(normalizeTaskerPhoto));
+      const response = await fetch(`${buildApiUrl('/taskers/all?includeUnapproved=true')}&t=${Date.now()}`, {
+        cache: 'no-cache',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
+
+      if (response.ok) {
+        const backendTaskers = await response.json();
+        const processedBackendTaskers = backendTaskers.map(t => ({ ...t, id: t._id, isBackendTasker: true }));
+        // Merge: virtual taskers first, then backend taskers (deduped by email)
+        const backendEmails = new Set(backendTaskers.map(t => t.email));
+        const virtualOnly = initialTaskers.filter(t => !backendEmails.has(t.email));
+        setTaskers([...virtualOnly, ...processedBackendTaskers].map(normalizeTaskerPhoto));
+      } else {
+        setTaskers(initialTaskers.map(normalizeTaskerPhoto));
       }
-    } catch (e) {
-      console.error('Load taskers error:', e);
+    } catch (error) {
+      console.error('Backend fetch error:', error);
       setTaskers(initialTaskers.map(normalizeTaskerPhoto));
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(taskers));
-    } catch (e) {
-      console.warn('Failed to save taskers', e);
-    }
-  }, [taskers]);
-
-  const addTasker = (taskerData) => {
+const addTasker = (taskerData) => {
     const newTasker = {
       id: Date.now().toString(),
       ...taskerData,
