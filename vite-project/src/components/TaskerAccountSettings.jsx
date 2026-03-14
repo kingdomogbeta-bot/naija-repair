@@ -421,18 +421,23 @@ function NotificationsSection({ onSave, saved }) {
 function BalanceSection() {
   const { user, getToken } = useAuth();
   const [wallet, setWallet] = useState(null);
+  const [debug, setDebug] = useState('');
 
   useEffect(() => {
     const fetchWallet = async () => {
       try {
         const token = getToken();
+        console.log('Fetching wallet for:', user?.email, 'token:', token ? 'present' : 'missing');
         const res = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
+        console.log('Wallet API response:', data);
+        setDebug(JSON.stringify(data));
         if (data.success) setWallet(data.data);
       } catch (err) {
         console.error('Fetch wallet error:', err);
+        setDebug('Error: ' + err.message);
       }
     };
     fetchWallet();
@@ -456,6 +461,7 @@ function BalanceSection() {
         </div>
       </div>
       <button onClick={() => window.location.href = '/tasker-wallet'} className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Manage Wallet</button>
+      {debug && <pre className="mt-4 text-xs bg-gray-100 p-3 rounded overflow-auto">{debug}</pre>}
     </div>
   );
 }
