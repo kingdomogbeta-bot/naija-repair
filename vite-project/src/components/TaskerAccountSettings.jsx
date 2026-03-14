@@ -421,23 +421,18 @@ function NotificationsSection({ onSave, saved }) {
 function BalanceSection() {
   const { user, getToken } = useAuth();
   const [wallet, setWallet] = useState(null);
-  const [debug, setDebug] = useState('');
 
   useEffect(() => {
     const fetchWallet = async () => {
       try {
         const token = getToken();
-        console.log('Fetching wallet for:', user?.email, 'token:', token ? 'present' : 'missing');
         const res = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        console.log('Wallet API response:', data);
-        setDebug(JSON.stringify(data));
         if (data.success) setWallet(data.data);
       } catch (err) {
         console.error('Fetch wallet error:', err);
-        setDebug('Error: ' + err.message);
       }
     };
     fetchWallet();
@@ -448,20 +443,19 @@ function BalanceSection() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Balance</h2>
       <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white mb-4">
         <p className="text-sm opacity-90 mb-2">Available Balance</p>
-        <p className="text-4xl font-bold">₦{wallet?.balance?.toLocaleString() || '0'}</p>
+        <p className="text-4xl font-bold">₦{wallet ? Number(wallet.balance).toLocaleString() : '0'}</p>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-sm text-gray-600">Total Earnings</p>
-          <p className="text-xl font-bold text-gray-900">₦{wallet?.totalEarnings?.toLocaleString() || '0'}</p>
+          <p className="text-xl font-bold text-gray-900">₦{wallet ? Number(wallet.totalEarnings).toLocaleString() : '0'}</p>
         </div>
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-sm text-gray-600">Total Withdrawals</p>
-          <p className="text-xl font-bold text-gray-900">₦{wallet?.totalWithdrawals?.toLocaleString() || '0'}</p>
+          <p className="text-xl font-bold text-gray-900">₦{wallet ? Number(wallet.totalWithdrawals).toLocaleString() : '0'}</p>
         </div>
       </div>
       <button onClick={() => window.location.href = '/tasker-wallet'} className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Manage Wallet</button>
-      {debug && <pre className="mt-4 text-xs bg-gray-100 p-3 rounded overflow-auto">{debug}</pre>}
     </div>
   );
 }
