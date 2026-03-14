@@ -29,10 +29,10 @@ export default function TaskerProfile() {
       // Get reviews for this specific tasker
       const fetchTaskerReviews = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/reviews/tasker/${id}`);
+          const response = await fetch(`https://naija-repair-api.onrender.com/api/reviews/tasker/${id}`);
           if (response.ok) {
             const data = await response.json();
-            setTaskerReviews(data || []);
+            setTaskerReviews(data.data || []);
           }
         } catch (error) {
           console.error('Failed to fetch tasker reviews:', error);

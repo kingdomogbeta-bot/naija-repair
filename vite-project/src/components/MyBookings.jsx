@@ -107,7 +107,7 @@ export default function MyBookings() {
                   <div className="flex gap-3 sm:gap-4 flex-1 w-full">
                     {b.taskerPhoto && b.taskerPhoto !== 'undefined' && b.taskerPhoto !== '' ? (
                       <img 
-                        src={b.taskerPhoto.startsWith('http') ? b.taskerPhoto : `http://localhost:5000${b.taskerPhoto}`} 
+                        src={b.taskerPhoto.startsWith('http') ? b.taskerPhoto : `https://naija-repair-api.onrender.com${b.taskerPhoto}`} 
                         alt={b.taskerName} 
                         onError={(e) => { 
                           e.target.style.display = 'none'; 
