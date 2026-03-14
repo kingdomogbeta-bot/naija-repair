@@ -22,19 +22,19 @@ export default function TaskerWallet() {
   const fetchWalletData = async () => {
     try {
       const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/wallet/${user.email}`, {
+      const response = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
       if (data.success) setWallet(data.data);
 
-      const txResponse = await fetch(`http://localhost:5000/api/wallet/${user.email}/transactions`, {
+      const txResponse = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}/transactions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const txData = await txResponse.json();
       if (txData.success) setTransactions(txData.data);
 
-      const wdResponse = await fetch(`http://localhost:5000/api/wallet/${user.email}/withdrawals`, {
+      const wdResponse = await fetch(`https://naija-repair-api.onrender.com/api/wallet/${user.email}/withdrawals`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const wdData = await wdResponse.json();
@@ -50,7 +50,7 @@ export default function TaskerWallet() {
 
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:5000/api/wallet/withdraw', {
+      const response = await fetch('https://naija-repair-api.onrender.com/api/wallet/withdraw', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

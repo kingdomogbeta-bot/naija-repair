@@ -9,7 +9,7 @@ export default function EarningsDashboard() {
   const [period, setPeriod] = useState('week');
 
   const myCompletedBookings = bookings.filter(
-    b => b.assignedTo === user?.email && b.status === 'completed'
+    b => (b.assignedTo === user?.email || b.taskerId === (user?._id || user?.id)) && b.status === 'completed'
   );
 
   const calculateEarnings = (timeframe) => {
@@ -26,10 +26,10 @@ export default function EarningsDashboard() {
 
     return myCompletedBookings
       .filter(b => new Date(b.createdAt) >= startDate)
-      .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      .reduce((sum, b) => sum + (b.totalAmount || b.totalPrice || 0), 0);
   };
 
-  const totalEarnings = myCompletedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+  const totalEarnings = myCompletedBookings.reduce((sum, b) => sum + (b.totalAmount || b.totalPrice || 0), 0);
   const weeklyEarnings = calculateEarnings('week');
   const monthlyEarnings = calculateEarnings('month');
   const avgPerTask = totalEarnings / (myCompletedBookings.length || 1);
@@ -40,7 +40,7 @@ export default function EarningsDashboard() {
 
     myCompletedBookings.forEach(b => {
       const day = new Date(b.createdAt).getDay();
-      earningsByDay[day] += b.totalPrice || 0;
+      earningsByDay[day] += (b.totalAmount || b.totalPrice || 0);
     });
 
     const maxEarning = Math.max(...earningsByDay);
@@ -129,7 +129,7 @@ export default function EarningsDashboard() {
                 <p className="font-semibold text-gray-900">{booking.service}</p>
                 <p className="text-sm text-gray-600">{new Date(booking.createdAt).toLocaleDateString()}</p>
               </div>
-              <p className="text-lg font-bold text-teal-600">₦{booking.totalPrice?.toLocaleString()}</p>
+              <p className="text-lg font-bold text-teal-600">₦{(booking.totalAmount || booking.totalPrice)?.toLocaleString()}</p>
             </div>
           ))}
         </div>

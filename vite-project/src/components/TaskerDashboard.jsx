@@ -16,7 +16,7 @@ export default function TaskerDashboard() {
   const { taskers, refreshTaskers } = useTaskers();
   const [activeTab, setActiveTab] = useState('jobs');
   const [currentTasker, setCurrentTasker] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
     const fetchCurrentTasker = async () => {
@@ -44,7 +44,7 @@ export default function TaskerDashboard() {
 
   const handleStartJob = async (bookingId) => {
     try {
-      setLoading(true);
+      setLoadingId(bookingId);
       const token = getToken();
       const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/start`, {
         method: 'PUT',
@@ -65,13 +65,13 @@ export default function TaskerDashboard() {
       console.error('Start job error:', error);
       alert('Failed to start job');
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
   const handleCompleteJob = async (bookingId) => {
     try {
-      setLoading(true);
+      setLoadingId(bookingId);
       const token = getToken();
       const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/tasker-complete`, {
         method: 'PUT',
@@ -92,7 +92,7 @@ export default function TaskerDashboard() {
       console.error('Complete job error:', error);
       alert('Failed to complete job');
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
@@ -100,7 +100,7 @@ export default function TaskerDashboard() {
     if (!confirm('Are you sure you want to unassign this job?')) return;
     
     try {
-      setLoading(true);
+      setLoadingId(bookingId);
       const token = getToken();
       const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/decline`, {
         method: 'PUT',
@@ -122,7 +122,7 @@ export default function TaskerDashboard() {
       console.error('Unassign job error:', error);
       alert('Failed to unassign job');
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
@@ -131,7 +131,7 @@ export default function TaskerDashboard() {
     if (!reason) return;
     
     try {
-      setLoading(true);
+      setLoadingId(bookingId);
       const token = getToken();
       const response = await fetch(`https://naija-repair-api.onrender.com/api/bookings/${bookingId}/decline`, {
         method: 'PUT',
@@ -153,7 +153,7 @@ export default function TaskerDashboard() {
       console.error('Decline job error:', error);
       alert('Failed to decline job');
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
@@ -321,14 +321,14 @@ export default function TaskerDashboard() {
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button 
                         onClick={() => assignBooking(b._id, user.email)} 
-                        disabled={loading}
+                        disabled={loadingId === b._id}
                         className="flex-1 bg-teal-600 text-white py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-teal-700 transition-all disabled:opacity-50"
                       >
-                        {loading ? 'Processing...' : 'Accept Job'}
+                        {loadingId === b._id ? 'Processing...' : 'Accept Job'}
                       </button>
                       <button 
                         onClick={() => handleDeclineJob(b._id)} 
-                        disabled={loading}
+                        disabled={loadingId === b._id}
                         className="px-4 bg-red-50 text-red-600 rounded-lg text-sm sm:text-base font-medium hover:bg-red-100 transition-all disabled:opacity-50"
                       >
                         Decline
@@ -384,36 +384,36 @@ export default function TaskerDashboard() {
                         <>
                           <button 
                             onClick={() => handleStartJob(b._id)} 
-                            disabled={loading}
+                            disabled={loadingId === b._id}
                             className="flex-1 bg-yellow-50 text-yellow-700 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-yellow-100 transition-all disabled:opacity-50"
                           >
-                            {loading ? 'Starting...' : 'Start Job'}
+                            {loadingId === b._id ? 'Starting...' : 'Start Job'}
                           </button>
                           <button 
                             onClick={() => handleCompleteJob(b._id)} 
-                            disabled={loading}
+                            disabled={loadingId === b._id}
                             className="flex-1 bg-green-50 text-green-600 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 transition-all disabled:opacity-50"
                           >
-                            {loading ? 'Completing...' : 'Complete'}
+                            {loadingId === b._id ? 'Completing...' : 'Complete'}
                           </button>
                         </>
                       )}
                       {b.status === 'in-progress' && (
                         <button 
                           onClick={() => handleCompleteJob(b._id)} 
-                          disabled={loading}
+                          disabled={loadingId === b._id}
                           className="flex-1 bg-green-50 text-green-600 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 transition-all disabled:opacity-50"
                         >
-                          {loading ? 'Completing...' : 'Mark Complete'}
+                          {loadingId === b._id ? 'Completing...' : 'Mark Complete'}
                         </button>
                       )}
                       {b.status !== 'completed' && (
                         <button 
                           onClick={() => handleUnassignJob(b._id)} 
-                          disabled={loading}
+                          disabled={loadingId === b._id}
                           className="px-3 sm:px-4 bg-gray-50 text-gray-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-50"
                         >
-                          {loading ? 'Processing...' : 'Unassign'}
+                          {loadingId === b._id ? 'Processing...' : 'Unassign'}
                         </button>
                       )}
                     </div>
