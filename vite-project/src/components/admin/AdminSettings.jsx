@@ -31,7 +31,7 @@ export default function AdminSettings() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/all');
+      const response = await fetch('https://naija-repair-api.onrender.com/api/settings/all');
       const data = await response.json();
       if (data.success && Object.keys(data.data).length > 0) {
         setSettings(prev => ({ ...prev, ...data.data }));
@@ -48,7 +48,7 @@ export default function AdminSettings() {
     try {
       const token = getToken();
       for (const [key, value] of Object.entries(settings)) {
-        await fetch('http://localhost:5000/api/settings/update', {
+        await fetch('https://naija-repair-api.onrender.com/api/settings/update', {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,

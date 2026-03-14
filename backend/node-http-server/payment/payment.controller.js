@@ -154,15 +154,21 @@ exports.verifyPayment = async (req, res) => {
           console.error('❌ Failed to create booking:', bookingError);
         }
 
-        // Credit tasker wallet
+        // Credit tasker wallet — look up tasker email by ID
         try {
-          await axios.post(`${process.env.BACKEND_URL || 'https://naija-repair-api.onrender.com'}/api/wallet/credit`, {
-            taskerEmail: payment.taskerId,
-            amount: payment.amount,
-            bookingId: payment.bookingId,
-            paymentReference: reference,
-            description: `Payment for booking ${payment.bookingId}`
-          });
+          const taskerForWallet = await Tasker.findById(payment.taskerId).select('email');
+          if (taskerForWallet) {
+            await axios.post(`${process.env.BACKEND_URL || 'https://naija-repair-api.onrender.com'}/api/wallet/credit`, {
+              taskerEmail: taskerForWallet.email,
+              amount: payment.amount,
+              bookingId: payment.bookingId,
+              paymentReference: reference,
+              description: `Payment for booking ${payment.bookingId}`
+            });
+            console.log('✅ Wallet credited for tasker:', taskerForWallet.email);
+          } else {
+            console.error('❌ Tasker not found for wallet credit, taskerId:', payment.taskerId);
+          }
         } catch (walletError) {
           console.error('Wallet credit error:', walletError.message);
         }

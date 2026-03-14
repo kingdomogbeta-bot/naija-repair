@@ -31,8 +31,16 @@ const withdrawalSchema = new mongoose.Schema({
   reference: { type: String }
 }, { timestamps: true });
 
+const adminEarningsSchema = new mongoose.Schema({
+  key: { type: String, default: 'platform', unique: true },
+  totalCommission: { type: Number, default: 0 },
+  totalTransactions: { type: Number, default: 0 },
+  lastUpdated: { type: Date, default: Date.now }
+}, { timestamps: true });
+
 module.exports = {
   Wallet: mongoose.model('Wallet', walletSchema),
   Transaction: mongoose.model('Transaction', transactionSchema),
-  Withdrawal: mongoose.model('Withdrawal', withdrawalSchema)
+  Withdrawal: mongoose.model('Withdrawal', withdrawalSchema),
+  AdminEarnings: mongoose.model('AdminEarnings', adminEarningsSchema)
 };

@@ -1,6 +1,5 @@
-const { Wallet, Transaction, Withdrawal } = require('./wallet.schema');
-
-const COMMISSION_RATE = 0.15;
+const { Wallet, Transaction, Withdrawal, AdminEarnings } = require('./wallet.schema');
+const Settings = require('../settings/settings.schema');
 
 exports.creditWallet = async (req, res) => {
   try {
@@ -10,11 +9,14 @@ exports.creditWallet = async (req, res) => {
       return res.status(400).json({ error: 'Tasker email and amount are required' });
     }
 
-    const commission = amount * COMMISSION_RATE;
+    // Read commission rate from settings (default 15%)
+    const commissionSetting = await Settings.findOne({ key: 'commissionRate' });
+    const commissionRate = commissionSetting ? (commissionSetting.value / 100) : 0.15;
+
+    const commission = Math.round(amount * commissionRate);
     const taskerAmount = amount - commission;
 
     let wallet = await Wallet.findOne({ taskerEmail });
-    
     if (!wallet) {
       wallet = new Wallet({ taskerEmail, balance: 0, totalEarnings: 0 });
     }
@@ -24,7 +26,7 @@ exports.creditWallet = async (req, res) => {
     wallet.totalEarnings += taskerAmount;
     await wallet.save();
 
-    const transaction = new Transaction({
+    await Transaction.create({
       taskerEmail,
       type: 'credit',
       amount: taskerAmount,
@@ -34,15 +36,18 @@ exports.creditWallet = async (req, res) => {
       balanceBefore,
       balanceAfter: wallet.balance
     });
-    await transaction.save();
 
-    res.json({
-      success: true,
-      wallet,
-      transaction,
-      commission,
-      taskerAmount
-    });
+    // Track admin commission earnings
+    let adminEarnings = await AdminEarnings.findOne({ key: 'platform' });
+    if (!adminEarnings) {
+      adminEarnings = new AdminEarnings({ key: 'platform', totalCommission: 0, totalTransactions: 0 });
+    }
+    adminEarnings.totalCommission += commission;
+    adminEarnings.totalTransactions += 1;
+    adminEarnings.lastUpdated = new Date();
+    await adminEarnings.save();
+
+    res.json({ success: true, wallet, commission, taskerAmount, commissionRate: commissionRate * 100 });
   } catch (error) {
     console.error('Credit wallet error:', error.message);
     res.status(500).json({ error: 'Failed to credit wallet' });
@@ -163,6 +168,15 @@ exports.processWithdrawal = async (req, res) => {
   } catch (error) {
     console.error('Process withdrawal error:', error.message);
     res.status(500).json({ error: 'Failed to process withdrawal' });
+  }
+};
+
+exports.getAdminEarnings = async (req, res) => {
+  try {
+    const earnings = await AdminEarnings.findOne({ key: 'platform' });
+    res.json({ success: true, data: earnings || { totalCommission: 0, totalTransactions: 0 } });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch admin earnings' });
   }
 };
 
