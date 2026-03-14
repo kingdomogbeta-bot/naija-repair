@@ -47,8 +47,8 @@ export default function FindTaskersPage() {
     const matchesRating = tasker.rating >= (settings.minTaskerRating || minRating);
     const notSuspended = !tasker.suspended;
     
-    // Show approved taskers OR new taskers (virtual taskers are always approved)
-    const isApproved = !tasker._id || !tasker.isBackendTasker || tasker.approved !== false;
+    // Virtual taskers always show; backend taskers show as long as not suspended
+    const isApproved = !tasker.isBackendTasker || !tasker.suspended;
     
     let matchesPrice = true;
     if (priceRange === 'low') matchesPrice = tasker.hourlyRate < 3000;
