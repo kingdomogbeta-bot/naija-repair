@@ -47,20 +47,23 @@ export default function AdminSettings() {
     e.preventDefault();
     try {
       const token = getToken();
-      for (const [key, value] of Object.entries(settings)) {
-        await fetch('https://naija-repair-api.onrender.com/api/settings/update', {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ key, value })
-        });
-      }
+      await Promise.all(
+        Object.entries(settings).map(([key, value]) =>
+          fetch('https://naija-repair-api.onrender.com/api/settings/update', {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ key, value })
+          })
+        )
+      );
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
-      alert('Failed to save settings');
+      console.error('Failed to save settings:', error);
+      alert('Failed to save settings: ' + error.message);
     }
   };
 
