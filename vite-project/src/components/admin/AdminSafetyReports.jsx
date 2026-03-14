@@ -122,6 +122,9 @@ export default function AdminSafetyReports() {
                   <div>
                     <p className="text-sm font-semibold text-gray-700">Reporter:</p>
                     <p className="text-gray-900">{report.userEmail || report.reporterEmail || report.taskerEmail}</p>
+                    {report.userPhone && (
+                      <a href={`tel:${report.userPhone}`} className="text-teal-600 font-semibold hover:underline text-sm">📞 {report.userPhone}</a>
+                    )}
                   </div>
                   {report.taskerName && (
                     <div>

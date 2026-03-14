@@ -5,6 +5,7 @@ const safetyReportSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   userEmail: { type: String, required: true },
   userName: { type: String, required: true },
+  userPhone: { type: String },
   taskerId: String,
   taskerName: String,
   type: { type: String, required: true },
