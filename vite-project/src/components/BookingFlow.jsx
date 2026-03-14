@@ -65,15 +65,6 @@ export default function BookingFlow() {
       createdByName: user?.name,
       paymentStatus: 'pending',
     };
-    addBooking(booking);
-    
-    addNotification({
-      type: 'booking',
-      title: 'Task Confirmed',
-      message: `Your task with ${tasker?.name} for ${bookingData.service} has been confirmed.`,
-      link: '/my-bookings'
-    });
-    
     navigate('/payment', { state: { booking } });
   };
 
