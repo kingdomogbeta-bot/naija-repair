@@ -17,6 +17,10 @@ services:
         sync: false
       - key: EMAILSECRET
         sync: false
+      - key: KEPLER_USER
+        sync: false
+      - key: KEPLER_PASS
+        sync: false
       - key: PSSECRET
         sync: false
       - key: PSPUB
