@@ -169,6 +169,15 @@ export const verifyPayment = async (reference) => {
   return data;
 };
 
+export const getAllPaymentsAdmin = async (token) => {
+  const response = await fetch(`${API_URL}/payment/all`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to fetch payments');
+  return data;
+};
+
 export const getPaymentByBooking = async (token, bookingId) => {
   const response = await fetch(`${API_URL}/payment/booking/${bookingId}`, {
     headers: { 
