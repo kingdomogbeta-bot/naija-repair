@@ -7,7 +7,7 @@ import { useMessages } from '../context/MessagesContext';
 import EarningsDashboard from './EarningsDashboard';
 import CalendarView from './CalendarView';
 import TaskerVerification from './TaskerVerification';
-import { Shield, AlertCircle, CheckCircle, Clock, MessageCircle } from 'lucide-react';
+import { Shield, AlertCircle, Clock, MessageCircle } from 'lucide-react';
 
 export default function TaskerDashboard() {
   const { user, getToken } = useAuth();
@@ -158,8 +158,7 @@ export default function TaskerDashboard() {
   };
 
   const showVerificationBanner = !currentTasker?.verified && (!currentTasker?.verificationStatus || currentTasker?.verificationStatus === 'rejected');
-  const showPendingBanner = currentTasker?.verificationStatus === 'pending';
-  const showVerifiedBanner = currentTasker?.verified;
+  const showPendingBanner = !currentTasker?.verified && currentTasker?.verificationStatus === 'pending';
 
   const available = bookings.filter(b => !b.assignedTo && (b.status === 'pending' || b.status === 'upcoming'));
   const mine = bookings.filter(b => b.assignedTo === user?.email || b.taskerId === (user?._id || user?.id));
@@ -202,18 +201,6 @@ export default function TaskerDashboard() {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
               </svg>
               <h3 className="text-lg font-bold text-yellow-900">Under Review</h3>
-            </div>
-          </div>
-        )}
-
-        {showVerifiedBanner && (
-          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6 rounded-lg">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-green-800">Verified Account</h3>
-                <p className="text-sm text-green-700 mt-1">Your account is verified. Clients can trust your services.</p>
-              </div>
             </div>
           </div>
         )}

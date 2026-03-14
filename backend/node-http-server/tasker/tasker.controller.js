@@ -1,6 +1,7 @@
 const Tasker = require('./tasker.schema');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Notification = require('../notification/notification.schema');
 
 const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://localhost:8000/api/email';
 
@@ -485,6 +486,14 @@ exports.approveVerification = async (req, res) => {
     if (!tasker) {
       return res.status(404).json({ message: 'Tasker not found' });
     }
+
+    await Notification.create({
+      userId: tasker._id.toString(),
+      userEmail: tasker.email,
+      type: 'verification',
+      title: '🎉 Congratulations! Account Verified',
+      message: 'After reviewing your details, your account has been approved. You are now a verified tasker on Naija Repair!'
+    });
 
     res.json({ success: true, message: 'Verification approved', data: tasker });
   } catch (error) {
