@@ -15,7 +15,7 @@ import FindTaskersPage from './components/FindTaskersPage';
 import BecomeTaskerPage from './components/BecomeTaskerPage';
 import SignUpPage from './components/SignUpPage';
 import LoginPage from './components/LoginPage';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { BookingsProvider } from './context/BookingsContext';
@@ -126,6 +126,7 @@ function AppContent() {
         <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
         <Route path="/tasker-settings" element={<ProtectedRoute><TaskerAccountSettings /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {!isAdminRoute && <Footer />}
       {!isAdminRoute && <SupportChatWidget />}
