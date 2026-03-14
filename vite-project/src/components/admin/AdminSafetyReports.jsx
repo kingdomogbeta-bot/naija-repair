@@ -123,6 +123,12 @@ export default function AdminSafetyReports() {
                     <p className="text-sm font-semibold text-gray-700">Reporter:</p>
                     <p className="text-gray-900">{report.userEmail || report.reporterEmail || report.taskerEmail}</p>
                   </div>
+                  {report.taskerName && (
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">Tasker Involved:</p>
+                      <p className="text-gray-900">{report.taskerName}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm font-semibold text-gray-700">Issue:</p>
                     <p className="text-gray-900">{report.description || report.issue}</p>
