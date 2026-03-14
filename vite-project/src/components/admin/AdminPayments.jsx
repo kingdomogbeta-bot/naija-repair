@@ -7,27 +7,11 @@ export default function AdminPayments() {
   const [payments, setPayments] = useState([]);
   const [adminEarnings, setAdminEarnings] = useState({ totalCommission: 0, totalTransactions: 0 });
   const [commissionRate, setCommissionRate] = useState(15);
+  const [loading, setLoading] = useState(true);
   const [migrating, setMigrating] = useState(false);
   const [migrateResult, setMigrateResult] = useState(null);
 
-  const [loading, setLoading] = useState(true);
-
-  const handleMigrate = async () => {
-    if (!window.confirm('This will process all past successful payments and credit tasker wallets + admin earnings for any unprocessed ones. Continue?')) return;
-    setMigrating(true);
-    setMigrateResult(null);
-    try {
-      const res = await migrateHistoricPayments(getToken());
-      setMigrateResult(res);
-      // Refresh earnings after migration
-      const earningsRes = await getAdminEarnings(getToken());
-      setAdminEarnings(earningsRes.data || { totalCommission: 0, totalTransactions: 0 });
-    } catch (e) {
-      setMigrateResult({ error: e.message });
-    } finally {
-      setMigrating(false);
-    }
-  };
+  useEffect(() => {
     const load = async () => {
       try {
         const token = getToken();
@@ -47,6 +31,22 @@ export default function AdminPayments() {
     };
     load();
   }, []);
+
+  const handleMigrate = async () => {
+    if (!window.confirm('This will process all past successful payments and credit tasker wallets + admin earnings for any unprocessed ones. Continue?')) return;
+    setMigrating(true);
+    setMigrateResult(null);
+    try {
+      const res = await migrateHistoricPayments(getToken());
+      setMigrateResult(res);
+      const earningsRes = await getAdminEarnings(getToken());
+      setAdminEarnings(earningsRes.data || { totalCommission: 0, totalTransactions: 0 });
+    } catch (e) {
+      setMigrateResult({ error: e.message });
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   const rate = commissionRate / 100;
   const successful = payments.filter(p => p.status === 'success');
@@ -78,7 +78,6 @@ export default function AdminPayments() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-xl shadow-md p-5">
           <p className="text-gray-500 text-sm">Total Revenue</p>
@@ -103,7 +102,6 @@ export default function AdminPayments() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4">All Transactions</h3>
         {loading ? (
