@@ -72,7 +72,7 @@ exports.sendOTP = async (req, res) => {
     const result = await response.json();
     console.log('📬 Keplars API response:', JSON.stringify(result));
 
-    if (!response.ok || !result.success) throw new Error(result.error || 'Failed to send email');
+    if (!response.ok) throw new Error(result.error || result.message || 'Failed to send email');
 
     console.log('✅ Email sent successfully via Keplars API');
     res.json({ message: 'OTP sent successfully' });
