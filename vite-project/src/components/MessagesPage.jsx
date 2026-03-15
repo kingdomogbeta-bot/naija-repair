@@ -55,21 +55,22 @@ export default function MessagesPage() {
     if (location.state?.taskerEmail) {
       const existingConv = conversations.find(c => 
         c.userEmail === location.state.taskerEmail || 
-        c.userId === location.state.taskerId
+        c.userId === location.state.taskerId ||
+        c.userId === location.state.taskerEmail
       );
-      console.log('Found existing conversation:', existingConv);
       if (existingConv) {
         handleSelectConversation(existingConv);
       } else {
-        // Create a new conversation object for messaging
         const newConversation = {
           userId: location.state.taskerId || location.state.taskerEmail,
           userEmail: location.state.taskerEmail,
-          userName: location.state.taskerName || 'Tasker',
+          userName: location.state.taskerName || location.state.taskerEmail,
         };
-        console.log('Creating new conversation:', newConversation);
         setSelectedConversation(newConversation);
         setShowMobileChat(true);
+        if (location.state.taskerId) {
+          getConversation(location.state.taskerId);
+        }
       }
     }
   }, [location.state, conversations]);

@@ -39,7 +39,13 @@ export default function TaskerDashboard() {
   }, [getToken]);
 
   const handleMessageClient = (booking) => {
-    navigate('/messages', { state: { taskerEmail: booking.createdByEmail, taskerName: booking.createdByName || booking.createdByEmail } });
+    navigate('/messages', { 
+      state: { 
+        taskerEmail: booking.userEmail || booking.createdByEmail, 
+        taskerName: booking.userName || booking.createdByName || booking.userEmail,
+        taskerId: booking.userId
+      } 
+    });
   };
 
   const handleStartJob = async (bookingId) => {
