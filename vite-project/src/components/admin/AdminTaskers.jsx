@@ -9,9 +9,8 @@ import { buildApiUrl, API_CONFIG } from '../../config/api';
 const resolveVerificationPhoto = (url) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
-  // Strip leading /uploads/ and build full Cloudinary URL
   const publicId = url.replace(/^\/uploads\//, '');
-  return `https://res.cloudinary.com/doenyjrti/image/upload/${publicId}`;
+  return 'https://res.cloudinary.com/doenyjrti/image/upload/' + publicId;
 };
 
 export default function AdminTaskers() {
