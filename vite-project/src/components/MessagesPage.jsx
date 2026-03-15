@@ -50,11 +50,11 @@ export default function MessagesPage() {
   };
 
   useEffect(() => {
-    console.log('MessagesPage location.state:', location.state);
-    console.log('Current conversations:', conversations);
-    if (location.state?.taskerEmail) {
-      const existingConv = conversations.find(c => 
-        c.userEmail === location.state.taskerEmail || 
+    if (!location.state?.taskerEmail) return;
+
+    const openConversation = () => {
+      const existingConv = conversations.find(c =>
+        c.userEmail === location.state.taskerEmail ||
         c.userId === location.state.taskerId ||
         c.userId === location.state.taskerEmail
       );
@@ -72,8 +72,18 @@ export default function MessagesPage() {
           getConversation(location.state.taskerId);
         }
       }
+    };
+
+    // If conversations already loaded, open immediately
+    // Otherwise wait for them to load (conversations.length check)
+    if (conversations.length > 0) {
+      openConversation();
+    } else {
+      // Small delay to let conversations fetch complete
+      const timer = setTimeout(openConversation, 1500);
+      return () => clearTimeout(timer);
     }
-  }, [location.state, conversations]);
+  }, [location.state?.taskerEmail, conversations.length]);
 
   useEffect(() => {
     if (selectedConversation && currentMessages.length > 0) {
