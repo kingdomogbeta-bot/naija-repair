@@ -6,6 +6,14 @@ import { useTaskers } from '../../context/TaskersContext';
 import { approveTaskerVerification, rejectTaskerVerification } from '../../services/api';
 import { buildApiUrl, API_CONFIG } from '../../config/api';
 
+const resolveVerificationPhoto = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  // Strip leading /uploads/ and build full Cloudinary URL
+  const publicId = url.replace(/^\/uploads\//, '');
+  return `https://res.cloudinary.com/doenyjrti/image/upload/${publicId}`;
+};
+
 export default function AdminTaskers() {
   const { getAllTaskers, refreshTaskers } = useTaskers();
   const { getToken } = useAuth();
@@ -282,7 +290,7 @@ export default function AdminTaskers() {
                       <div>
                         <p className="text-xs text-gray-500 mb-1">NIN Card</p>
                         <img
-                          src={tasker.ninPhotoUrl.startsWith('http') ? tasker.ninPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${tasker.ninPhotoUrl}`}
+                          src={resolveVerificationPhoto(tasker.ninPhotoUrl)}
                           alt="NIN"
                           className="w-full h-24 object-cover rounded-lg border-2 border-yellow-300"
                           onError={(e) => { e.target.style.display = 'none'; }}
@@ -293,7 +301,7 @@ export default function AdminTaskers() {
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Passport</p>
                         <img
-                          src={tasker.passportPhotoUrl.startsWith('http') ? tasker.passportPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${tasker.passportPhotoUrl}`}
+                          src={resolveVerificationPhoto(tasker.passportPhotoUrl)}
                           alt="Passport"
                           className="w-full h-24 object-cover rounded-lg border-2 border-yellow-300"
                           onError={(e) => { e.target.style.display = 'none'; }}
@@ -453,10 +461,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">NIN Card Photo</p>
                             <img 
-                              src={selectedTasker.ninPhotoUrl.startsWith('http') ? selectedTasker.ninPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.ninPhotoUrl}`}
+                              src={resolveVerificationPhoto(selectedTasker.ninPhotoUrl)}
                               alt="NIN Card" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(selectedTasker.ninPhotoUrl.startsWith('http') ? selectedTasker.ninPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.ninPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(resolveVerificationPhoto(selectedTasker.ninPhotoUrl), '_blank')}
                             />
                           </div>
                         )}
@@ -464,10 +472,10 @@ export default function AdminTaskers() {
                           <div>
                             <p className="text-sm text-gray-600 mb-2">Live Passport Photo</p>
                             <img 
-                              src={selectedTasker.passportPhotoUrl.startsWith('http') ? selectedTasker.passportPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.passportPhotoUrl}`}
+                              src={resolveVerificationPhoto(selectedTasker.passportPhotoUrl)}
                               alt="Passport" 
                               className="w-full h-48 rounded-lg object-cover border-2 border-gray-200 cursor-pointer hover:border-teal-500"
-                              onClick={() => window.open(selectedTasker.passportPhotoUrl.startsWith('http') ? selectedTasker.passportPhotoUrl : `${API_CONFIG.BASE_URL.replace('/api', '')}${selectedTasker.passportPhotoUrl}`, '_blank')}
+                              onClick={() => window.open(resolveVerificationPhoto(selectedTasker.passportPhotoUrl), '_blank')}
                             />
                           </div>
                         )}
