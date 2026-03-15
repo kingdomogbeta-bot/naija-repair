@@ -54,7 +54,9 @@ function BecomeTaskerPage() {
       await sendOTP(email);
       setStep('otp');
     } catch (err) {
-      setError(err.message || 'Failed to send OTP');
+      // Still navigate to OTP page — user can use resend
+      setStep('otp');
+      console.error('OTP send failed:', err.message);
     } finally {
       setLoading(false);
     }

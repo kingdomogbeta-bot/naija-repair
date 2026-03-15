@@ -2,12 +2,10 @@ const nodemailer = require('nodemailer');
 const OTP = require('./otp.schema');
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.kepler.email',
-  port: 587,
-  secure: false,
+  service: 'gmail',
   auth: {
-    user: process.env.KEPLER_USER,
-    pass: process.env.KEPLER_PASS
+    user: process.env.EMAIL,
+    pass: process.env.EMAILSECRET
   }
 });
 
@@ -27,7 +25,7 @@ exports.sendOTP = async (req, res) => {
     console.log('📧 Sending email to:', email);
 
     await transporter.sendMail({
-      from: '"Naija Repair" <kingdomogbeta@gmail.com>',
+      from: `"Naija Repair" <${process.env.EMAIL}>`,
       to: email,
       subject: 'Your Naija Repair Verification Code',
       html: `
