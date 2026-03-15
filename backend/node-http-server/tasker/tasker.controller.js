@@ -455,8 +455,8 @@ exports.submitVerification = async (req, res) => {
       return res.status(400).json({ message: 'Both NIN card photo and passport photo are required' });
     }
 
-    const ninPhotoUrl = `/uploads/${req.files.ninPhoto[0].filename}`;
-    const passportPhotoUrl = `/uploads/${req.files.passportPhoto[0].filename}`;
+    const ninPhotoUrl = req.files.ninPhoto[0].path;
+    const passportPhotoUrl = req.files.passportPhoto[0].path;
     const taskerId = req.user._id || req.user.id;
     const tasker = await Tasker.findByIdAndUpdate(
       taskerId,
