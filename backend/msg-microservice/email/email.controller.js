@@ -2,49 +2,6 @@ const OTP = require('./otp.schema');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const htmlTemplate = (otp) => `
-  <!DOCTYPE html>
-  <html>
-  <body style="margin:0;padding:0;background-color:#f0fdfa;font-family:Arial,sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td align="center" style="padding:40px 20px;">
-          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(13,148,136,0.10);">
-            <tr>
-              <td style="background:linear-gradient(135deg,#14b8a6 0%,#0d9488 100%);padding:36px 40px;text-align:center;">
-                <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;">🔧 Naija Repair</h1>
-                <p style="margin:8px 0 0;color:#ccfbf1;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Verification Code</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:40px;">
-                <p style="margin:0 0 24px;color:#134e4a;font-size:16px;text-align:center;">Use the code below to verify your account. It expires in <strong>10 minutes</strong>.</p>
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td align="center">
-                      <div style="display:inline-block;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border:2px solid #14b8a6;border-radius:12px;padding:28px 48px;margin:8px 0;">
-                        <p style="margin:0 0 6px;color:#0d9488;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Your OTP</p>
-                        <p style="margin:0;color:#0d9488;font-size:44px;font-weight:900;letter-spacing:12px;font-family:'Courier New',monospace;">${otp}</p>
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin:24px 0 0;color:#6b7280;font-size:13px;text-align:center;">If you didn't request this, please ignore this email.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="background:#f0fdfa;padding:20px 40px;text-align:center;border-top:1px solid #99f6e4;">
-                <p style="margin:0;color:#0d9488;font-size:12px;">© 2024 Naija Repair · Your trusted repair platform in Nigeria</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-  </html>
-`;
-
 exports.sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -58,26 +15,66 @@ exports.sendOTP = async (req, res) => {
     console.log('💾 OTP saved to database');
     console.log('📧 Sending email to:', email);
 
-    const response = await fetch('https://api.kepler.email/v1/email/send', {
+    const response = await fetch('https://api.keplars.com/api/v1/send-email/instant', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.KEPLER_PASS}`
+        'Authorization': `Bearer ${process.env.KEPLER_PASS}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: { email: process.env.KEPLER_USER, name: 'Naija Repair' },
-        to: [{ email }],
+        to: [email],
         subject: 'Your Naija Repair Verification Code',
-        html: htmlTemplate(otp)
+        body: `
+          <!DOCTYPE html>
+          <html>
+          <body style="margin:0;padding:0;background-color:#f0fdfa;font-family:Arial,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center" style="padding:40px 20px;">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(13,148,136,0.10);">
+                    <tr>
+                      <td style="background:linear-gradient(135deg,#14b8a6 0%,#0d9488 100%);padding:36px 40px;text-align:center;">
+                        <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;">🔧 Naija Repair</h1>
+                        <p style="margin:8px 0 0;color:#ccfbf1;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Verification Code</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:40px;">
+                        <p style="margin:0 0 24px;color:#134e4a;font-size:16px;text-align:center;">Use the code below to verify your account. It expires in <strong>10 minutes</strong>.</p>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td align="center">
+                              <div style="display:inline-block;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border:2px solid #14b8a6;border-radius:12px;padding:28px 48px;margin:8px 0;">
+                                <p style="margin:0 0 6px;color:#0d9488;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Your OTP</p>
+                                <p style="margin:0;color:#0d9488;font-size:44px;font-weight:900;letter-spacing:12px;font-family:'Courier New',monospace;">${otp}</p>
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                        <p style="margin:24px 0 0;color:#6b7280;font-size:13px;text-align:center;">If you didn't request this, please ignore this email.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="background:#f0fdfa;padding:20px 40px;text-align:center;border-top:1px solid #99f6e4;">
+                        <p style="margin:0;color:#0d9488;font-size:12px;">© 2024 Naija Repair · Your trusted repair platform in Nigeria</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `
       })
     });
 
     const result = await response.json();
-    console.log('📬 Kepler API response:', JSON.stringify(result));
+    console.log('📬 Keplars API response:', JSON.stringify(result));
 
-    if (!response.ok) throw new Error(result.message || result.error || 'Failed to send email');
+    if (!response.ok || !result.success) throw new Error(result.error || 'Failed to send email');
 
-    console.log('✅ Email sent successfully via Kepler API');
+    console.log('✅ Email sent successfully via Keplars API');
     res.json({ message: 'OTP sent successfully' });
   } catch (error) {
     console.error('❌ Send OTP error:', error.message);
