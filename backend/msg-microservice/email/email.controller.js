@@ -14,6 +14,7 @@ exports.sendOTP = async (req, res) => {
     await OTP.create({ email, otp, expiresAt });
     console.log('💾 OTP saved to database');
     console.log('📧 Sending email to:', email);
+    console.log('🔑 OTP code:', otp);
 
     const response = await fetch('https://api.keplars.com/api/v1/send-email/instant', {
       method: 'POST',
