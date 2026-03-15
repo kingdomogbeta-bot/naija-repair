@@ -9,7 +9,7 @@ export default function EarningsDashboard() {
   const [period, setPeriod] = useState('week');
 
   const myCompletedBookings = bookings.filter(
-    b => (b.assignedTo === user?.email || b.taskerId === (user?._id || user?.id)) && b.status === 'completed'
+    b => (b.taskerEmail === user?.email || b.assignedTo === user?.email) && b.status === 'completed'
   );
 
   const calculateEarnings = (timeframe) => {
@@ -17,15 +17,15 @@ export default function EarningsDashboard() {
     let startDate;
 
     if (timeframe === 'week') {
-      startDate = new Date(now.setDate(now.getDate() - 7));
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     } else if (timeframe === 'month') {
-      startDate = new Date(now.setMonth(now.getMonth() - 1));
+      startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
     } else {
-      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
     }
 
     return myCompletedBookings
-      .filter(b => new Date(b.createdAt) >= startDate)
+      .filter(b => new Date(b.completedAt || b.updatedAt || b.createdAt) >= startDate)
       .reduce((sum, b) => sum + (b.totalAmount || b.totalPrice || 0), 0);
   };
 
@@ -38,10 +38,18 @@ export default function EarningsDashboard() {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const earningsByDay = days.map(() => 0);
 
-    myCompletedBookings.forEach(b => {
-      const day = new Date(b.createdAt).getDay();
-      earningsByDay[day] += (b.totalAmount || b.totalPrice || 0);
-    });
+    const now = new Date();
+    let startDate;
+    if (period === 'week') startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    else if (period === 'month') startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    else startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+    myCompletedBookings
+      .filter(b => new Date(b.completedAt || b.updatedAt || b.createdAt) >= startDate)
+      .forEach(b => {
+        const day = new Date(b.completedAt || b.updatedAt || b.createdAt).getDay();
+        earningsByDay[day] += (b.totalAmount || b.totalPrice || 0);
+      });
 
     const maxEarning = Math.max(...earningsByDay);
     return days.map((day, i) => ({
@@ -105,26 +113,34 @@ export default function EarningsDashboard() {
 
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-6">Earnings by Day</h3>
-        <div className="flex items-end justify-between h-48 gap-2">
-          {earningsData.map((data, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center">
-              <div className="w-full bg-teal-100 rounded-t-lg relative group cursor-pointer hover:bg-teal-200 transition-all"
-                   style={{ height: `${data.height}%` }}>
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  ₦{data.amount.toLocaleString()}
+        {totalEarnings === 0 ? (
+          <div className="flex items-center justify-center h-48 text-gray-400 text-sm">No earnings data yet</div>
+        ) : (
+          <div className="flex items-end justify-between h-48 gap-2">
+            {earningsData.map((data, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center">
+                <div
+                  className="w-full bg-teal-100 rounded-t-lg relative group cursor-pointer hover:bg-teal-200 transition-all"
+                  style={{ height: `${Math.max(data.height, data.amount > 0 ? 5 : 2)}%` }}
+                >
+                  {data.amount > 0 && (
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      ₦{data.amount.toLocaleString()}
+                    </div>
+                  )}
                 </div>
+                <span className="text-xs text-gray-600 mt-2">{data.day}</span>
               </div>
-              <span className="text-xs text-gray-600 mt-2">{data.day}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Earnings</h3>
         <div className="space-y-3">
           {myCompletedBookings.slice(0, 5).map(booking => (
-            <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={booking._id || booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="font-semibold text-gray-900">{booking.service}</p>
                 <p className="text-sm text-gray-600">{new Date(booking.createdAt).toLocaleDateString()}</p>

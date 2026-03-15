@@ -40,6 +40,7 @@ export default function PaymentModal({ booking, onClose, onSuccess }) {
           userName: user.name,
           userPhone: user.phone,
           taskerName: booking.taskerName,
+          taskerEmail: booking.taskerEmail,
           description: booking.details
         }
       };
