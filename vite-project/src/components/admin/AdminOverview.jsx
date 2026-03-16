@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useBookings } from '../../context/BookingsContext';
 import { useTaskers } from '../../context/TaskersContext';
 import { useUsers } from '../../context/UsersContext';
+import { Users, Wrench, CalendarDays, Clock, Calendar } from 'lucide-react';
 
 export default function AdminOverview() {
   const { bookings } = useBookings();
@@ -14,10 +15,10 @@ export default function AdminOverview() {
   const upcomingBookings = bookings.filter(b => b.status === 'upcoming').length;
 
   const stats = [
-    { label: 'Total Users', value: users.length, change: '+12%', color: 'blue', icon: '👥' },
-    { label: 'Total Taskers', value: taskers.length, change: '+8%', color: 'teal', icon: '🔧' },
-    { label: 'Total Bookings', value: bookings.length, change: '+15%', color: 'green', icon: '📅' },
-    { label: 'Pending Verifications', value: pendingVerifications, change: '', color: 'yellow', icon: '⏳' },
+    { label: 'Total Users', value: users.length, change: '+12%', color: 'blue', icon: <Users className="w-6 h-6 text-blue-600" /> },
+    { label: 'Total Taskers', value: taskers.length, change: '+8%', color: 'teal', icon: <Wrench className="w-6 h-6 text-teal-600" /> },
+    { label: 'Total Bookings', value: bookings.length, change: '+15%', color: 'green', icon: <CalendarDays className="w-6 h-6 text-green-600" /> },
+    { label: 'Pending Verifications', value: pendingVerifications, change: '', color: 'yellow', icon: <Clock className="w-6 h-6 text-yellow-600" /> },
   ];
 
   return (
@@ -31,7 +32,7 @@ export default function AdminOverview() {
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
                 {stat.change && <p className="text-green-600 text-sm mt-1">{stat.change} ↑</p>}
               </div>
-              <div className={`bg-${stat.color}-100 rounded-full p-3 text-3xl relative`}>
+              <div className={`bg-${stat.color}-100 rounded-full p-3 relative`}>
                 {stat.icon}
                 {stat.label === 'Pending Verifications' && stat.value > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -87,7 +88,9 @@ export default function AdminOverview() {
         <div className="space-y-3">
           {bookings.slice(0, 5).map((booking, idx) => (
             <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <span className="text-2xl">📅</span>
+              <div className="bg-teal-100 rounded-full p-2">
+                <Calendar className="w-5 h-5 text-teal-600" />
+              </div>
               <div className="flex-1">
                 <p className="font-medium text-gray-900">{booking.service} booking</p>
                 <p className="text-sm text-gray-600">by {booking.createdByName}</p>
