@@ -160,7 +160,7 @@ export default function TaskerVerification({ tasker, onSuccess }) {
     );
   }
 
-  if (tasker?.verificationStatus === 'rejected') {
+  if (tasker?.verificationStatus === 'rejected' && !showForm) {
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
         <div className="flex items-center gap-3 mb-2">
