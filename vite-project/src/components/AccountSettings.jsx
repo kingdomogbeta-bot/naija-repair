@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Shield, Bell, CreditCard, XCircle, Briefcase, Wallet, Receipt, Trash2, Camera, Edit3, X } from 'lucide-react';
+import { User, Lock, Shield, Bell, Wallet, Trash2, Camera, Edit3, X } from 'lucide-react';
 import { uploadUserPhoto, deleteUserAccount, deleteUserPhoto } from '../services/api';
 
 export default function AccountSettings() {
@@ -15,11 +15,7 @@ export default function AccountSettings() {
     { id: 'password', label: 'Password', icon: Lock },
     { id: 'security', label: 'Account Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'billing', label: 'Billing Info', icon: CreditCard },
-    { id: 'cancel-task', label: 'Cancel a Task', icon: XCircle },
-    { id: 'business', label: 'Business Information', icon: Briefcase },
     { id: 'balance', label: 'Account Balance', icon: Wallet },
-    { id: 'transactions', label: 'Transactions', icon: Receipt },
     { id: 'delete', label: 'Delete Account', icon: Trash2 },
   ];
 
@@ -102,11 +98,7 @@ export default function AccountSettings() {
               {activeSection === 'password' && <PasswordSection onSave={handleSave} saved={saved} />}
               {activeSection === 'security' && <SecuritySection onSave={handleSave} saved={saved} />}
               {activeSection === 'notifications' && <NotificationsSection onSave={handleSave} saved={saved} />}
-              {activeSection === 'billing' && <BillingSection onSave={handleSave} saved={saved} />}
-              {activeSection === 'cancel-task' && <CancelTaskSection />}
-              {activeSection === 'business' && <BusinessSection onSave={handleSave} saved={saved} />}
-              {activeSection === 'balance' && <BalanceSection />}
-              {activeSection === 'transactions' && <TransactionsSection />}
+              {activeSection === 'balance' && <BalanceSection user={user} />}
               {activeSection === 'delete' && <DeleteAccountSection onDelete={handleDeleteAccount} />}
             </div>
           </div>
@@ -397,108 +389,58 @@ function NotificationsSection({ onSave, saved }) {
   );
 }
 
-function BillingSection({ onSave, saved }) {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
-      <form onSubmit={(e) => { e.preventDefault(); onSave(); }} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-          <input value={cardNumber} onChange={e => setCardNumber(e.target.value)} placeholder="1234 5678 9012 3456" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-            <input value={expiry} onChange={e => setExpiry(e.target.value)} placeholder="MM/YY" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-            <input value={cvv} onChange={e => setCvv(e.target.value)} placeholder="123" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-          </div>
-        </div>
-        <button type="submit" className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Save Billing Info</button>
-        {saved && <p className="text-sm text-green-600">✓ Billing information saved</p>}
-      </form>
-    </div>
-  );
-}
-
-function CancelTaskSection() {
+function BalanceSection({ user }) {
+  const { getToken } = useAuth();
   const navigate = useNavigate();
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Cancel a Task</h2>
-      <p className="text-gray-600 mb-4">View and manage your active bookings</p>
-      <button onClick={() => navigate('/my-bookings')} className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Go to My Bookings</button>
-    </div>
-  );
-}
+  const [wallet, setWallet] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-function BusinessSection({ onSave, saved }) {
-  const [businessName, setBusinessName] = useState('');
-  const [taxId, setTaxId] = useState('');
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { getUserWallet } = await import('../services/api');
+        const res = await getUserWallet(getToken(), user?.email);
+        setWallet(res.data);
+        setTransactions(res.transactions || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.email) load();
+  }, [user?.email]);
 
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Business Information</h2>
-      <form onSubmit={(e) => { e.preventDefault(); onSave(); }} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-          <input value={businessName} onChange={e => setBusinessName(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
-          <input value={taxId} onChange={e => setTaxId(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-        </div>
-        <button type="submit" className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Save Business Info</button>
-        {saved && <p className="text-sm text-green-600">✓ Business information saved</p>}
-      </form>
-    </div>
-  );
-}
-
-function BalanceSection() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Balance</h2>
-      <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white mb-6">
-        <p className="text-sm opacity-90 mb-2">Available Balance</p>
-        <p className="text-4xl font-bold">₦0.00</p>
-      </div>
-      <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700">Add Funds</button>
-    </div>
-  );
-}
-
-function TransactionsSection() {
-  const transactions = [
-    { id: 1, date: '2024-01-15', description: 'Payment for Plumbing Service', amount: -15000, status: 'completed' },
-    { id: 2, date: '2024-01-10', description: 'Payment for Cleaning Service', amount: -8000, status: 'completed' },
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Transaction History</h2>
-      <div className="space-y-3">
-        {transactions.map(t => (
-          <div key={t.id} className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl">
-            <div>
-              <p className="font-medium text-gray-900">{t.description}</p>
-              <p className="text-sm text-gray-600">{new Date(t.date).toLocaleDateString()}</p>
-            </div>
-            <div className="text-right">
-              <p className={`font-bold ${t.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                {t.amount < 0 ? '-' : '+'}₦{Math.abs(t.amount).toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600">{t.status}</p>
-            </div>
+      {loading ? (
+        <div className="text-gray-400 text-sm">Loading...</div>
+      ) : (
+        <>
+          <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl p-6 text-white mb-6">
+            <p className="text-sm text-teal-100 mb-1">Refund Balance</p>
+            <p className="text-4xl font-black">₦{(wallet?.balance || 0).toLocaleString()}</p>
+            <p className="text-xs text-teal-200 mt-2">Total refunds received: ₦{(wallet?.totalRefunds || 0).toLocaleString()}</p>
           </div>
-        ))}
-      </div>
+          {transactions.length === 0 ? (
+            <p className="text-sm text-gray-500">No refund transactions yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map(t => (
+                <div key={t._id} className="flex items-center justify-between p-4 border-2 border-gray-100 rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">{t.description}</p>
+                    <p className="text-xs text-gray-400">{new Date(t.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <p className="font-bold text-green-600">+₦{t.amount.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
