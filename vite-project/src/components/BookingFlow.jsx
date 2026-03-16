@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { initializePayment } from '../services/api';
 import { useBookings } from '../context/BookingsContext';
 import { useTaskers } from '../context/TaskersContext';
 import { useNotifications } from '../context/NotificationsContext';
@@ -13,7 +14,7 @@ const DRY_CLEANING_PRICES = { iron: 300, wash: 500 };
 
 export default function BookingFlow() {
   const { taskerId } = useParams();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const { addBooking } = useBookings();
   const { taskers } = useTaskers();
   const { addNotification } = useNotifications();
@@ -33,6 +34,8 @@ export default function BookingFlow() {
     taskerId: taskerId || '',
   });
   const [dryCleaningData, setDryCleaningData] = useState({ serviceType: 'iron', clothCount: 1 });
+  const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState('');
 
   useEffect(() => {
     const loadServices = async () => {
@@ -57,7 +60,9 @@ export default function BookingFlow() {
     return baseAmount + commission;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setPayLoading(true);
+    setPayError('');
     const totalAmount = calculateTotal();
     const booking = {
       id: Date.now().toString(),
@@ -76,7 +81,36 @@ export default function BookingFlow() {
       createdByName: user?.name,
       paymentStatus: 'pending',
     };
-    navigate('/payment', { state: { booking } });
+    try {
+      const token = getToken();
+      const response = await initializePayment(token, {
+        bookingId: booking.id,
+        taskerId: booking.taskerId,
+        amount: totalAmount,
+        email: user.email,
+        metadata: {
+          service: booking.service,
+          date: booking.date,
+          time: booking.time,
+          duration: booking.duration,
+          address: booking.address,
+          city: booking.city,
+          details: booking.description,
+          userEmail: user.email,
+          userName: user.name,
+          taskerName: booking.taskerName,
+        }
+      });
+      if (response.success && response.data.authorization_url) {
+        window.location.href = response.data.authorization_url;
+      } else {
+        setPayError('Failed to initialize payment. Please try again.');
+        setPayLoading(false);
+      }
+    } catch (err) {
+      setPayError(err.message || 'Payment failed. Please try again.');
+      setPayLoading(false);
+    }
   };
 
   if (!user) {
@@ -302,13 +336,16 @@ export default function BookingFlow() {
                   >
                     Back
                   </button>
+                  {payError && (
+                    <div className="flex-1 basis-full text-red-600 text-sm bg-red-50 p-3 rounded-xl">{payError}</div>
+                  )}
                   <button 
                     onClick={handleSubmit} 
-                    disabled={!bookingData.date || !bookingData.time || !bookingData.address || (!isDryCleaning && !bookingData.details)} 
+                    disabled={payLoading || !bookingData.date || !bookingData.time || !bookingData.address || (!isDryCleaning && !bookingData.details)} 
                     className="flex-1 bg-teal-600 text-white py-4 rounded-xl font-semibold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                   >
-                    Confirm & Pay
-                    <ArrowRight className="w-5 h-5" />
+                    {payLoading ? 'Processing...' : 'Confirm & Pay'}
+                    {!payLoading && <ArrowRight className="w-5 h-5" />}
                   </button>
                 </div>
               </div>

@@ -153,7 +153,7 @@ export default function ServicesPage() {
                     to={service.specialService === 'dry-cleaning' ? '/dry-cleaning-booking' : `/find-taskers?service=${encodeURIComponent(service.name)}`}
                     className="block w-full bg-teal-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-md hover:shadow-lg"
                   >
-                    {service.specialService === 'dry-cleaning' ? 'Book Dry Cleaning' : 'Book Now'}
+                    Book Now
                   </Link>
                 </div>
               </div>

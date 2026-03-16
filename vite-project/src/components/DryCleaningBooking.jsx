@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { initializePayment } from '../services/api';
 import { NIGERIA_STATES, STATE_LGAS } from '../data/locations';
 import { Plus, Minus, Check, ArrowRight } from 'lucide-react';
 
 const PRICES = { iron: 300, wash: 500 };
 
 export default function DryCleaningBooking() {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
+  const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState('');
   const [serviceType, setServiceType] = useState('iron');
   const [clothCount, setClothCount] = useState(1);
   const [date, setDate] = useState('');
@@ -33,24 +36,35 @@ export default function DryCleaningBooking() {
     setStep(2);
   };
 
-  const handleConfirm = () => {
-    const booking = {
-      service: 'Dry Cleaning & Laundry',
-      description: `${serviceLabel} - ${clothCount} cloth${clothCount > 1 ? 'es' : ''}`,
-      location: `${state}, ${lga}`,
-      state,
-      lga,
-      address,
-      landmark,
-      scheduledDate: date,
-      scheduledTime: time,
-      estimatedHours: Math.ceil(clothCount / 5) || 1,
-      totalAmount,
-      userName: user?.name,
-      userEmail: user?.email,
-      userPhone: user?.phone,
-    };
-    navigate('/payment', { state: { booking } });
+  const handleConfirm = async () => {
+    setPayLoading(true);
+    setPayError('');
+    try {
+      const token = getToken();
+      const response = await initializePayment(token, {
+        bookingId: Date.now().toString(),
+        amount: totalAmount,
+        email: user.email,
+        metadata: {
+          service: 'Dry Cleaning & Laundry',
+          description: `${serviceLabel} - ${clothCount} cloth${clothCount > 1 ? 'es' : ''}`,
+          date,
+          time,
+          address: `${address}, ${lga}, ${state}`,
+          userEmail: user.email,
+          userName: user.name,
+        }
+      });
+      if (response.success && response.data.authorization_url) {
+        window.location.href = response.data.authorization_url;
+      } else {
+        setPayError('Failed to initialize payment. Please try again.');
+        setPayLoading(false);
+      }
+    } catch (err) {
+      setPayError(err.message || 'Payment failed. Please try again.');
+      setPayLoading(false);
+    }
   };
 
   return (
@@ -229,9 +243,10 @@ export default function DryCleaningBooking() {
                   className="flex-1 border-2 border-gray-300 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all">
                   Back
                 </button>
-                <button onClick={handleConfirm}
-                  className="flex-1 bg-teal-600 text-white py-4 rounded-xl font-bold hover:bg-teal-700 transition-all flex items-center justify-center gap-2">
-                  Confirm & Pay <ArrowRight className="w-5 h-5" />
+                {payError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{payError}</div>}
+                <button onClick={handleConfirm} disabled={payLoading}
+                  className="flex-1 bg-teal-600 text-white py-4 rounded-xl font-bold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                  {payLoading ? 'Processing...' : <><span>Confirm & Pay</span> <ArrowRight className="w-5 h-5" /></>}
                 </button>
               </div>
             </div>
