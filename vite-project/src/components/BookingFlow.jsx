@@ -7,7 +7,9 @@ import { useNotifications } from '../context/NotificationsContext';
 import { useSettings } from '../context/SettingsContext';
 import { getServices } from '../config/services';
 import { resolveTaskerPhoto, setTaskerFallbackOnError } from '../utils/taskerPhoto';
-import { Calendar, Clock, MapPin, FileText, Check, ArrowRight, Star } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, Check, ArrowRight, Star, Plus, Minus } from 'lucide-react';
+
+const DRY_CLEANING_PRICES = { iron: 300, wash: 500 };
 
 export default function BookingFlow() {
   const { taskerId } = useParams();
@@ -30,6 +32,7 @@ export default function BookingFlow() {
     details: '',
     taskerId: taskerId || '',
   });
+  const [dryCleaningData, setDryCleaningData] = useState({ serviceType: 'iron', clothCount: 1 });
 
   useEffect(() => {
     const loadServices = async () => {
@@ -42,8 +45,12 @@ export default function BookingFlow() {
   const tasker = taskers.find(t => t.id === bookingData.taskerId);
   const cities = ['Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Benin City'];
   const timeSlots = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
+  const isDryCleaning = bookingData.service === 'Dry Cleaning & Laundry';
 
   const calculateTotal = () => {
+    if (isDryCleaning) {
+      return dryCleaningData.clothCount * DRY_CLEANING_PRICES[dryCleaningData.serviceType];
+    }
     if (!tasker) return 0;
     const baseAmount = tasker.hourlyRate * parseInt(bookingData.duration);
     const commission = (baseAmount * (settings.commissionRate || 15)) / 100;
@@ -51,14 +58,18 @@ export default function BookingFlow() {
   };
 
   const handleSubmit = () => {
-    const totalPrice = calculateTotal();
+    const totalAmount = calculateTotal();
     const booking = {
       id: Date.now().toString(),
       ...bookingData,
+      description: isDryCleaning
+        ? `${dryCleaningData.serviceType === 'iron' ? 'Ironing Only' : 'Wash & Iron'} - ${dryCleaningData.clothCount} cloth${dryCleaningData.clothCount > 1 ? 'es' : ''}`
+        : bookingData.details,
       taskerName: tasker?.name,
       taskerPhoto: tasker ? resolveTaskerPhoto(tasker) : '',
       hourlyRate: tasker?.hourlyRate,
-      totalPrice,
+      totalAmount,
+      totalPrice: totalAmount,
       status: 'upcoming',
       createdAt: new Date().toISOString(),
       createdByEmail: user?.email,
@@ -111,13 +122,7 @@ export default function BookingFlow() {
                   {(tasker?.services || serviceNames).map(service => (
                     <button
                       key={service}
-                      onClick={() => {
-                        if (service === 'Dry Cleaning & Laundry') {
-                          navigate('/dry-cleaning-booking');
-                          return;
-                        }
-                        setBookingData({...bookingData, service});
-                      }}
+                      onClick={() => setBookingData({...bookingData, service})}
                       className={`group p-6 border-2 rounded-2xl text-left transition-all ${
                         bookingData.service === service 
                           ? 'border-teal-500 bg-teal-50 shadow-lg' 
@@ -170,7 +175,6 @@ export default function BookingFlow() {
                         className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" 
                       />
                     </div>
-                    
                     <div>
                       <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
                         <Clock className="w-5 h-5 text-teal-600" />
@@ -187,19 +191,80 @@ export default function BookingFlow() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
-                      <Clock className="w-5 h-5 text-teal-600" />
-                      Duration
-                    </label>
-                    <select 
-                      value={bookingData.duration} 
-                      onChange={e => setBookingData({...bookingData, duration: e.target.value})} 
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                    >
-                      {[1,2,3,4,5,6,7,8].map(h => <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>)}
-                    </select>
-                  </div>
+                  {isDryCleaning ? (
+                    <>
+                      <div>
+                        <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
+                          <FileText className="w-5 h-5 text-teal-600" />
+                          Service Type
+                        </label>
+                        <div className="grid grid-cols-2 gap-4">
+                          {[{ key: 'iron', label: 'Ironing Only', price: 300 }, { key: 'wash', label: 'Wash & Iron', price: 500 }].map(opt => (
+                            <button key={opt.key} type="button"
+                              onClick={() => setDryCleaningData({...dryCleaningData, serviceType: opt.key})}
+                              className={`p-4 rounded-xl border-2 text-center transition-all ${
+                                dryCleaningData.serviceType === opt.key ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'
+                              }`}>
+                              <div className="text-xl font-bold text-teal-600">₦{opt.price}</div>
+                              <div className="font-semibold text-gray-900 text-sm">{opt.label}</div>
+                              <div className="text-xs text-gray-500">per cloth</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
+                          <FileText className="w-5 h-5 text-teal-600" />
+                          Number of Clothes
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <button type="button"
+                            onClick={() => setDryCleaningData({...dryCleaningData, clothCount: Math.max(1, dryCleaningData.clothCount - 1)})}
+                            className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-xl flex items-center justify-center">
+                            <Minus className="w-5 h-5" />
+                          </button>
+                          <div className="flex-1 text-center">
+                            <div className="text-4xl font-bold text-gray-900">{dryCleaningData.clothCount}</div>
+                            <div className="text-sm text-gray-500">cloth{dryCleaningData.clothCount > 1 ? 'es' : ''}</div>
+                          </div>
+                          <button type="button"
+                            onClick={() => setDryCleaningData({...dryCleaningData, clothCount: dryCleaningData.clothCount + 1})}
+                            className="w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center">
+                            <Plus className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
+                          <Clock className="w-5 h-5 text-teal-600" />
+                          Duration
+                        </label>
+                        <select 
+                          value={bookingData.duration} 
+                          onChange={e => setBookingData({...bookingData, duration: e.target.value})} 
+                          className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                        >
+                          {[1,2,3,4,5,6,7,8].map(h => <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
+                          <FileText className="w-5 h-5 text-teal-600" />
+                          Task Details
+                        </label>
+                        <textarea 
+                          value={bookingData.details} 
+                          onChange={e => setBookingData({...bookingData, details: e.target.value})} 
+                          placeholder="Describe what you need in detail..." 
+                          rows={4} 
+                          className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" 
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
@@ -228,20 +293,6 @@ export default function BookingFlow() {
                       {cities.map(city => <option key={city} value={city}>{city}</option>)}
                     </select>
                   </div>
-
-                  <div>
-                    <label className="flex items-center gap-2 text-gray-900 mb-3 font-medium">
-                      <FileText className="w-5 h-5 text-teal-600" />
-                      Task Details
-                    </label>
-                    <textarea 
-                      value={bookingData.details} 
-                      onChange={e => setBookingData({...bookingData, details: e.target.value})} 
-                      placeholder="Describe what you need in detail..." 
-                      rows={4} 
-                      className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" 
-                    />
-                  </div>
                 </div>
 
                 <div className="flex gap-4 mt-8">
@@ -253,7 +304,7 @@ export default function BookingFlow() {
                   </button>
                   <button 
                     onClick={handleSubmit} 
-                    disabled={!bookingData.date || !bookingData.time || !bookingData.address || !bookingData.details} 
+                    disabled={!bookingData.date || !bookingData.time || !bookingData.address || (!isDryCleaning && !bookingData.details)} 
                     className="flex-1 bg-teal-600 text-white py-4 rounded-xl font-semibold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                   >
                     Confirm & Pay
@@ -294,18 +345,37 @@ export default function BookingFlow() {
                         <span className="text-gray-600">Service</span>
                         <span className="font-semibold text-gray-900">{bookingData.service}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Hourly Rate</span>
-                        <span className="font-semibold text-gray-900">₦{tasker?.hourlyRate.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Duration</span>
-                        <span className="font-semibold text-gray-900">{bookingData.duration}h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Service Fee</span>
-                        <span className="font-semibold text-gray-900">{settings.commissionRate || 15}%</span>
-                      </div>
+                      {isDryCleaning ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Type</span>
+                            <span className="font-semibold text-gray-900">{dryCleaningData.serviceType === 'iron' ? 'Ironing Only' : 'Wash & Iron'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Clothes</span>
+                            <span className="font-semibold text-gray-900">{dryCleaningData.clothCount}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Price per cloth</span>
+                            <span className="font-semibold text-gray-900">₦{DRY_CLEANING_PRICES[dryCleaningData.serviceType].toLocaleString()}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Hourly Rate</span>
+                            <span className="font-semibold text-gray-900">₦{tasker?.hourlyRate?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Duration</span>
+                            <span className="font-semibold text-gray-900">{bookingData.duration}h</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Service Fee</span>
+                            <span className="font-semibold text-gray-900">{settings.commissionRate || 15}%</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                     
                     <div className="pt-5 border-t-2 border-gray-200">
