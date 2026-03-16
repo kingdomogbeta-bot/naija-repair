@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingsContext';
 import { useTaskers } from '../context/TaskersContext';
 import { useReviews } from '../context/ReviewsContext';
-import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Users, Wrench, Briefcase, CalendarDays, ShieldAlert, Flag, MessageSquare, Mail, Star, Banknote, BarChart2, Settings, Globe, LogOut } from 'lucide-react';
 import AdminOverview from './admin/AdminOverview';
 import AdminUsers from './admin/AdminUsers';
 import AdminTaskers from './admin/AdminTaskers';
@@ -40,19 +40,19 @@ export default function AdminDashboard() {
   };
 
   const menuItems = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'users', label: 'Users', icon: '👥' },
-    { id: 'taskers', label: 'Taskers', icon: '🔧' },
-    { id: 'services', label: 'Services', icon: '🛠️' },
-    { id: 'bookings', label: 'Bookings', icon: '📅' },
-    { id: 'safety', label: 'Safety Reports', icon: '🛡️' },
-    { id: 'reports', label: 'User Reports', icon: '🚩' },
-    { id: 'support', label: 'Support', icon: '💬' },
-    { id: 'messages', label: 'Messages', icon: '📨' },
-    { id: 'reviews', label: 'Reviews', icon: '⭐' },
-    { id: 'payments', label: 'Payments', icon: '💰' },
-    { id: 'analytics', label: 'Analytics', icon: '📈' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'users', label: 'Users', icon: <Users className="w-5 h-5" /> },
+    { id: 'taskers', label: 'Taskers', icon: <Wrench className="w-5 h-5" /> },
+    { id: 'services', label: 'Services', icon: <Briefcase className="w-5 h-5" /> },
+    { id: 'bookings', label: 'Bookings', icon: <CalendarDays className="w-5 h-5" /> },
+    { id: 'safety', label: 'Safety Reports', icon: <ShieldAlert className="w-5 h-5" /> },
+    { id: 'reports', label: 'User Reports', icon: <Flag className="w-5 h-5" /> },
+    { id: 'support', label: 'Support', icon: <MessageSquare className="w-5 h-5" /> },
+    { id: 'messages', label: 'Messages', icon: <Mail className="w-5 h-5" /> },
+    { id: 'reviews', label: 'Reviews', icon: <Star className="w-5 h-5" /> },
+    { id: 'payments', label: 'Payments', icon: <Banknote className="w-5 h-5" /> },
+    { id: 'analytics', label: 'Analytics', icon: <BarChart2 className="w-5 h-5" /> },
+    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                 activeTab === item.id ? 'bg-teal-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
-              <span className="text-lg sm:text-xl">{item.icon}</span>
+              <span>{item.icon}</span>
               <span className="font-medium">{item.label}</span>
               {item.id === 'taskers' && pendingVerifications > 0 && (
                 <span className="absolute right-3 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -110,11 +110,11 @@ export default function AdminDashboard() {
 
         <div className="p-2 sm:p-4 border-t border-gray-800">
           <Link to="/" className="flex items-center gap-3 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 mb-2 text-sm sm:text-base">
-            <span className="text-lg sm:text-xl">🌐</span>
+            <Globe className="w-5 h-5" />
             <span>View Site</span>
           </Link>
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 text-sm sm:text-base">
-            <span className="text-lg sm:text-xl">🚪</span>
+            <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </button>
         </div>
