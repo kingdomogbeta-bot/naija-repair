@@ -89,7 +89,6 @@ function Header() {
                       {count > 0 && <BookingCountBadge />}
                     </Link>
                     <Link to="/favorites" className="px-4 py-2 text-gray-700 hover:text-teal-600 font-medium transition-colors rounded-lg hover:bg-teal-50">Favorites</Link>
-                    <Link to="/my-wallet" className="px-4 py-2 text-gray-700 hover:text-teal-600 font-medium transition-colors rounded-lg hover:bg-teal-50">My Wallet</Link>
                   </>
                 )}
                 <Link to="/messages" className="px-4 py-2 text-gray-700 hover:text-teal-600 font-medium transition-colors rounded-lg hover:bg-teal-50 flex items-center gap-2">
@@ -173,7 +172,6 @@ function Header() {
                   <>
                     <Link to="/my-bookings" className="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 font-medium rounded-lg transition-colors" onClick={() => setMenuOpen(false)}>My Bookings</Link>
                     <Link to="/favorites" className="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 font-medium rounded-lg transition-colors" onClick={() => setMenuOpen(false)}>Favorites</Link>
-                    <Link to="/my-wallet" className="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 font-medium rounded-lg transition-colors" onClick={() => setMenuOpen(false)}>My Wallet</Link>
                   </>
                 )}
                 <Link to="/messages" className="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 font-medium rounded-lg transition-colors" onClick={() => setMenuOpen(false)}>Messages</Link>
