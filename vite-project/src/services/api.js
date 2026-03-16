@@ -1053,6 +1053,32 @@ export const updateReport = async (token, reportId, updates) => {
   return data;
 };
 
+export const processRefund = async (token, reportId, refundAmount) => {
+  const response = await fetch(`${API_URL}/reports/${reportId}/refund`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ refundAmount })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to process refund');
+  return data;
+};
+
+export const getUserWallet = async (token, userEmail) => {
+  const response = await fetch(`${API_URL}/reports/user-wallet/${userEmail}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch wallet');
+  return data;
+};
+
 // Support API functions
 export const createSupportTicket = async (token, ticketData) => {
   const response = await fetch(`${API_URL}/support/ticket`, {

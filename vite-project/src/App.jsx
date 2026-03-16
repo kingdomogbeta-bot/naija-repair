@@ -43,6 +43,7 @@ import AdminDashboard from './components/AdminDashboard';
 import UserDashboard from './components/UserDashboard';
 import DryCleaningBooking from './components/DryCleaningBooking';
 import TaskerWallet from './components/TaskerWallet';
+import UserWallet from './components/UserWallet';
 import MaintenancePage from './components/MaintenancePage';
 import { useEffect, useState } from 'react';
 import { useAuth } from './context/AuthContext';
@@ -120,6 +121,7 @@ function AppContent() {
         <Route path="/tasker/:id" element={<TaskerProfile />} />
         <Route path="/tasker-dashboard" element={<ProtectedRoute><TaskerDashboard /></ProtectedRoute>} />
         <Route path="/tasker-wallet" element={<ProtectedRoute><TaskerWallet /></ProtectedRoute>} />
+        <Route path="/my-wallet" element={<ProtectedRoute><UserWallet /></ProtectedRoute>} />
         <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
         <Route path="/tasker-settings" element={<ProtectedRoute><TaskerAccountSettings /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

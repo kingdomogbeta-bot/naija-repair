@@ -10,10 +10,12 @@ import { useNotifications } from '../context/NotificationsContext';
 import ReviewModal from './ReviewModal';
 import SafetyTracker from './SafetyTracker';
 import PaymentModal from './PaymentModal';
-import { Star, MessageCircle, Shield } from 'lucide-react';
+import { Star, MessageCircle, Shield, Flag } from 'lucide-react';
+import { createReport } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function MyBookings() {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const { bookings, updateBookingStatus, updateBooking, deleteBooking, completeBooking, cancelBooking } = useBookings();
   const { getBookingReview } = useReviews();
   const { markAllAsRead } = useNotifications();
@@ -34,6 +36,35 @@ export default function MyBookings() {
   const [safetyBooking, setSafetyBooking] = useState(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentBooking, setPaymentBooking] = useState(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportBooking, setReportBooking] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+
+  const handleReport = async () => {
+    if (!reportReason.trim()) return;
+    setReportSubmitting(true);
+    try {
+      const token = getToken();
+      await createReport(token, {
+        bookingId: reportBooking._id,
+        taskerEmail: reportBooking.taskerEmail || reportBooking.assignedTo,
+        taskerName: reportBooking.taskerName,
+        service: reportBooking.service,
+        refundAmount: reportBooking.totalAmount,
+        reason: reportReason,
+        description: reportReason,
+        reportedUserId: reportBooking.taskerId || '',
+        reportedUserEmail: reportBooking.taskerEmail || '',
+      });
+      setReportDone(true);
+    } catch (e) {
+      alert(e.message || 'Failed to submit report');
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
 
   const handleMessageTasker = (booking) => {
     console.log('Messaging tasker with booking:', booking);
@@ -148,7 +179,7 @@ export default function MyBookings() {
                     {(b.status === 'assigned' || b.status === 'in-progress') && b.taskerId && <button onClick={() => { setSafetyBooking(b); setSafetyTrackerOpen(true); }} className="px-3 sm:px-4 py-2 bg-green-50 text-green-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-100 flex items-center gap-2"><Shield className="w-4 h-4" /> <span className="hidden sm:inline">Safety</span></button>}
                     {b.status === 'completed' && !getBookingReview(b._id) && <button onClick={() => { setSelectedBooking(b); setReviewModalOpen(true); }} className="px-3 sm:px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-yellow-100 flex items-center gap-2"><Star className="w-4 h-4" /> <span className="hidden sm:inline">Rate</span></button>}
                     {b.status === 'completed' && getBookingReview(b._id) && <span className="px-3 sm:px-4 py-2 bg-green-50 text-green-600 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-2"><Star className="w-4 h-4 fill-current" /> Reviewed</span>}
-                    {b.status === 'completed' && <button onClick={() => { const reason = prompt('Describe the issue (e.g. tasker never showed up):'); if (reason) alert(`Your report has been submitted.\n\nBooking: ${b.service}\nTasker: ${b.taskerName}\nIssue: ${reason}\n\nOur team will review and respond within 24 hours.`); }} className="px-3 sm:px-4 py-2 bg-red-50 text-red-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-100 flex items-center gap-2">🚩 <span className="hidden sm:inline">Report</span></button>}
+                    {b.status === 'completed' && <button onClick={() => { setReportBooking(b); setReportReason(''); setReportDone(false); setReportModalOpen(true); }} className="px-3 sm:px-4 py-2 bg-red-50 text-red-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-100 flex items-center gap-2"><Flag className="w-4 h-4" /> <span className="hidden sm:inline">Report</span></button>}
                   </div>
 
                   <div className="flex gap-2">
@@ -213,6 +244,39 @@ export default function MyBookings() {
           onClose={() => { setPaymentModalOpen(false); setPaymentBooking(null); }}
           onSuccess={() => { setPaymentModalOpen(false); setPaymentBooking(null); }}
         />
+      )}
+
+      {reportModalOpen && reportBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            {reportDone ? (
+              <div className="text-center py-4">
+                <div className="text-5xl mb-4">✅</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Report Submitted</h3>
+                <p className="text-gray-600 mb-2">Our team will review your report within 24 hours.</p>
+                <p className="text-gray-600 mb-6">If a refund is approved, <span className="font-semibold text-teal-600">₦{reportBooking.totalAmount?.toLocaleString()}</span> will be added to your wallet.</p>
+                <button onClick={() => { setReportModalOpen(false); setReportBooking(null); }} className="w-full bg-teal-600 text-white py-3 rounded-xl font-semibold hover:bg-teal-700">Close</button>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Report an Issue</h3>
+                <p className="text-sm text-gray-500 mb-4">{reportBooking.service} • {reportBooking.taskerName}</p>
+                <textarea
+                  value={reportReason}
+                  onChange={e => setReportReason(e.target.value)}
+                  placeholder="Describe the issue (e.g. tasker never showed up, poor service...)"
+                  rows={4}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 mb-4"
+                />
+                <p className="text-xs text-gray-500 mb-4">Refund amount if approved: <span className="font-semibold text-teal-600">₦{reportBooking.totalAmount?.toLocaleString()}</span></p>
+                <div className="flex gap-3">
+                  <button onClick={() => setReportModalOpen(false)} className="flex-1 border-2 border-gray-200 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50">Cancel</button>
+                  <button onClick={handleReport} disabled={reportSubmitting || !reportReason.trim()} className="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 disabled:bg-gray-300">{reportSubmitting ? 'Submitting...' : 'Submit Report'}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </main>
   );

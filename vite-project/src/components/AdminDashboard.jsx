@@ -17,6 +17,7 @@ import AdminAnalytics from './admin/AdminAnalytics';
 import AdminSettings from './admin/AdminSettings';
 import AdminServiceManager from './admin/AdminServiceManager';
 import AdminSafetyReports from './admin/AdminSafetyReports';
+import AdminReports from './admin/AdminReports';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
     { id: 'services', label: 'Services', icon: '🛠️' },
     { id: 'bookings', label: 'Bookings', icon: '📅' },
     { id: 'safety', label: 'Safety Reports', icon: '🛡️' },
+    { id: 'reports', label: 'User Reports', icon: '🚩' },
     { id: 'support', label: 'Support', icon: '💬' },
     { id: 'messages', label: 'Messages', icon: '📨' },
     { id: 'reviews', label: 'Reviews', icon: '⭐' },
@@ -147,6 +149,7 @@ export default function AdminDashboard() {
           {activeTab === 'services' && <AdminServiceManager />}
           {activeTab === 'bookings' && <AdminBookings />}
           {activeTab === 'safety' && <AdminSafetyReports />}
+          {activeTab === 'reports' && <AdminReports />}
           {activeTab === 'support' && <AdminSupport />}
           {activeTab === 'messages' && <AdminMessages />}
           {activeTab === 'reviews' && <AdminReviews />}

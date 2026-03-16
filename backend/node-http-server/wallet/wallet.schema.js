@@ -44,3 +44,23 @@ module.exports = {
   Withdrawal: mongoose.model('Withdrawal', withdrawalSchema),
   AdminEarnings: mongoose.model('AdminEarnings', adminEarningsSchema)
 };
+
+const userWalletSchema = new mongoose.Schema({
+  userEmail: { type: String, required: true, unique: true },
+  balance: { type: Number, default: 0 },
+  totalRefunds: { type: Number, default: 0 }
+}, { timestamps: true });
+
+const userTransactionSchema = new mongoose.Schema({
+  userEmail: { type: String, required: true },
+  type: { type: String, enum: ['refund'], required: true },
+  amount: { type: Number, required: true },
+  description: { type: String, required: true },
+  bookingId: { type: String },
+  reportId: { type: String },
+  balanceBefore: { type: Number },
+  balanceAfter: { type: Number }
+}, { timestamps: true });
+
+module.exports.UserWallet = mongoose.model('UserWallet', userWalletSchema);
+module.exports.UserTransaction = mongoose.model('UserTransaction', userTransactionSchema);
