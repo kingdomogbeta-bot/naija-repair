@@ -42,6 +42,7 @@ import PaymentVerification from './components/PaymentVerification';
 import AdminDashboard from './components/AdminDashboard';
 import UserDashboard from './components/UserDashboard';
 import DryCleaningBooking from './components/DryCleaningBooking';
+import DeliveryBooking from './components/DeliveryBooking';
 import TaskerWallet from './components/TaskerWallet';
 import UserWallet from './components/UserWallet';
 import MaintenancePage from './components/MaintenancePage';
@@ -107,6 +108,7 @@ function AppContent() {
         />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/dry-cleaning-booking" element={<DryCleaningBooking />} />
+        <Route path="/delivery-booking" element={<ProtectedRoute><DeliveryBooking /></ProtectedRoute>} />
         <Route path="/user-home" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
         <Route path="/find-taskers" element={<FindTaskersPage />} />
         <Route path="/become-tasker" element={<BecomeTaskerPage />} />
