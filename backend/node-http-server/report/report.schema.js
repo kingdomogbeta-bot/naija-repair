@@ -15,6 +15,7 @@ const reportSchema = new mongoose.Schema({
   description: String,
   status: { type: String, enum: ['pending', 'reviewed', 'refunded', 'dismissed'], default: 'pending' },
   refundStatus: { type: String, enum: ['none', 'issued', 'failed'], default: 'none' },
+  adminRead: { type: Boolean, default: false },
   reviewedBy: String,
   reviewedAt: Date,
   action: String

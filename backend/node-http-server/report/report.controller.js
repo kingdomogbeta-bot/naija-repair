@@ -122,6 +122,24 @@ exports.processRefund = async (req, res) => {
   }
 };
 
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const count = await Report.countDocuments({ adminRead: false });
+    res.json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.markAllRead = async (req, res) => {
+  try {
+    await Report.updateMany({ adminRead: false }, { adminRead: true });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getUserWallet = async (req, res) => {
   try {
     const { userEmail } = req.params;

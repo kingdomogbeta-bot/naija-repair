@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingsContext';
 import { useTaskers } from '../context/TaskersContext';
 import { useReviews } from '../context/ReviewsContext';
 import { Menu, X, LayoutDashboard, Users, Wrench, Briefcase, CalendarDays, ShieldAlert, Flag, MessageSquare, Mail, Star, Banknote, BarChart2, Settings, Globe, LogOut } from 'lucide-react';
+import { getUnreadReportsCount } from '../services/api';
 import AdminOverview from './admin/AdminOverview';
 import AdminUsers from './admin/AdminUsers';
 import AdminTaskers from './admin/AdminTaskers';
@@ -23,11 +24,16 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [unreadReports, setUnreadReports] = useState(0);
+  const { user, logout, getToken } = useAuth();
   const { taskers } = useTaskers();
   const navigate = useNavigate();
 
   const pendingVerifications = taskers.filter(t => t.verificationStatus === 'pending').length;
+
+  useEffect(() => {
+    getUnreadReportsCount(getToken()).then(r => setUnreadReports(r.count || 0)).catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -37,6 +43,7 @@ export default function AdminDashboard() {
   const handleMenuClick = (tabId) => {
     setActiveTab(tabId);
     setMobileMenuOpen(false);
+    if (tabId === 'reports') setUnreadReports(0);
   };
 
   const menuItems = [
@@ -46,7 +53,7 @@ export default function AdminDashboard() {
     { id: 'services', label: 'Services', icon: <Briefcase className="w-5 h-5" /> },
     { id: 'bookings', label: 'Bookings', icon: <CalendarDays className="w-5 h-5" /> },
     { id: 'safety', label: 'Safety Reports', icon: <ShieldAlert className="w-5 h-5" /> },
-    { id: 'reports', label: 'User Reports', icon: <Flag className="w-5 h-5" /> },
+    { id: 'reports', label: 'User Reports', icon: <Flag className="w-5 h-5" />, badge: unreadReports },
     { id: 'support', label: 'Support', icon: <MessageSquare className="w-5 h-5" /> },
     { id: 'messages', label: 'Messages', icon: <Mail className="w-5 h-5" /> },
     { id: 'reviews', label: 'Reviews', icon: <Star className="w-5 h-5" /> },
@@ -102,6 +109,11 @@ export default function AdminDashboard() {
               {item.id === 'taskers' && pendingVerifications > 0 && (
                 <span className="absolute right-3 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {pendingVerifications}
+                </span>
+              )}
+              {item.badge > 0 && (
+                <span className="absolute right-3 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {item.badge}
                 </span>
               )}
             </button>

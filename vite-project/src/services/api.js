@@ -1067,6 +1067,25 @@ export const processRefund = async (token, reportId, refundAmount) => {
   return data;
 };
 
+export const getUnreadReportsCount = async (token) => {
+  const response = await fetch(`${API_URL}/reports/unread-count`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch count');
+  return data;
+};
+
+export const markAllReportsRead = async (token) => {
+  const response = await fetch(`${API_URL}/reports/mark-all-read`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to mark as read');
+  return data;
+};
+
 export const getUserWallet = async (token, userEmail) => {
   const response = await fetch(`${API_URL}/reports/user-wallet/${userEmail}`, {
     headers: {

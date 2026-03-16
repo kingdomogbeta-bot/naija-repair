@@ -13,6 +13,8 @@ import PaymentModal from './PaymentModal';
 import { Star, MessageCircle, Shield, Flag, User, Calendar, Clock, MapPin, CheckCircle, CreditCard } from 'lucide-react';
 import { createReport } from '../services/api';
 
+const stripEmojis = str => str?.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA9F}]/gu, '').replace(/^[\s\W]+/, '').trim();
+
 export default function MyBookings() {
   const { user, getToken } = useAuth();
   const { bookings, updateBookingStatus, updateBooking, deleteBooking, completeBooking, cancelBooking } = useBookings();
@@ -154,7 +156,7 @@ export default function MyBookings() {
                         <h3 className="text-base sm:text-xl font-bold text-gray-900 truncate">{b.service}</h3>
                         <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold self-start ${b.status === 'completed' ? 'bg-green-100 text-green-700' : b.status === 'in-progress' ? 'bg-yellow-100 text-yellow-700' : b.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{b.status === 'in-progress' ? 'In Progress' : b.status.charAt(0).toUpperCase() + b.status.slice(1)}</span>
                       </div>
-                      <p className="text-sm sm:text-base text-gray-600 mb-2 line-clamp-2">{b.description}</p>
+                      {stripEmojis(b.description) && <p className="text-sm sm:text-base text-gray-600 mb-2 line-clamp-2">{stripEmojis(b.description)}</p>}
                       <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500">
                         <span className="flex items-center gap-1 truncate"><User className="w-3 h-3" /> {b.taskerName || 'Pending'}</span>
                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(b.scheduledDate).toLocaleDateString()}</span>

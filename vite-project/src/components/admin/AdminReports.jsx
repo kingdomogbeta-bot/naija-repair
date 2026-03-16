@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllReports, processRefund, updateReport } from '../../services/api';
+import { getAllReports, processRefund, updateReport, markAllReportsRead } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { CheckCircle, Wallet, RefreshCw } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export default function AdminReports() {
   const [refundingId, setRefundingId] = useState(null);
   const [refundAmounts, setRefundAmounts] = useState({});
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); markAllReportsRead(getToken()).catch(() => {}); }, []);
 
   const load = async () => {
     try {
