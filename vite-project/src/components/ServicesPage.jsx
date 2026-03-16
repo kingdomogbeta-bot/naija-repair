@@ -150,7 +150,7 @@ export default function ServicesPage() {
                     </ul>
                   </div>
                   <Link
-                    to={service.specialService === 'dry-cleaning' ? '/dry-cleaning-booking' : service.specialService === 'delivery' ? '/delivery-booking' : `/find-taskers?service=${encodeURIComponent(service.name)}`}
+                    to={service.name === 'Dry Cleaning & Laundry' ? '/dry-cleaning-booking' : service.name === 'Moving & Delivery' ? '/delivery-booking' : `/find-taskers?service=${encodeURIComponent(service.name)}`}
                     className="block w-full bg-teal-600 text-white text-center py-3 rounded-xl font-semibold hover:bg-teal-700 transition-all shadow-md hover:shadow-lg"
                   >
                     Book Now
