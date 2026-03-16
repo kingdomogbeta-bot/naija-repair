@@ -12,7 +12,6 @@ import SafetyTracker from './SafetyTracker';
 import PaymentModal from './PaymentModal';
 import { Star, MessageCircle, Shield, Flag } from 'lucide-react';
 import { createReport } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 
 export default function MyBookings() {
   const { user, getToken } = useAuth();
