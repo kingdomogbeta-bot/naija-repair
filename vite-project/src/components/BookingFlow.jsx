@@ -111,7 +111,13 @@ export default function BookingFlow() {
                   {(tasker?.services || serviceNames).map(service => (
                     <button
                       key={service}
-                      onClick={() => setBookingData({...bookingData, service})}
+                      onClick={() => {
+                        if (service === 'Dry Cleaning & Laundry') {
+                          navigate('/dry-cleaning-booking');
+                          return;
+                        }
+                        setBookingData({...bookingData, service});
+                      }}
                       className={`group p-6 border-2 rounded-2xl text-left transition-all ${
                         bookingData.service === service 
                           ? 'border-teal-500 bg-teal-50 shadow-lg' 
