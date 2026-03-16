@@ -126,8 +126,8 @@ exports.verifyPayment = async (req, res) => {
             paymentStatus: 'paid',
             paymentReference: reference,
             userEmail: payment.metadata.userEmail,
-            userName: payment.metadata.userName,
-            userPhone: payment.metadata.userPhone,
+            userName: payment.metadata.userName || 'User',
+            userPhone: payment.metadata.userPhone || 'N/A',
             taskerName: payment.metadata.taskerName,
             taskerPhoto: tasker?.photoUrl || null,
             city: payment.metadata.city || 'Lagos'

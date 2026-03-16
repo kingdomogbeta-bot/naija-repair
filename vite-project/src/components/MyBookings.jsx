@@ -17,7 +17,7 @@ const stripEmojis = str => str?.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u
 
 export default function MyBookings() {
   const { user, getToken } = useAuth();
-  const { bookings, updateBookingStatus, updateBooking, deleteBooking, completeBooking, cancelBooking } = useBookings();
+  const { bookings, updateBookingStatus, updateBooking, deleteBooking, completeBooking, cancelBooking, loadBookings } = useBookings();
   const { getBookingReview } = useReviews();
   const { markAllAsRead } = useNotifications();
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ export default function MyBookings() {
 
   useEffect(() => {
     markAllAsRead();
+    loadBookings();
   }, []);
 
   const [confirmOpen, setConfirmOpen] = useState(false);

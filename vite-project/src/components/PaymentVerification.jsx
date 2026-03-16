@@ -26,18 +26,14 @@ export default function PaymentVerification() {
         const response = await verifyPayment(reference);
         
         if (response.success) {
-          // Remove the localStorage update since we're now creating in backend
           setStatus('success');
           setMessage('Payment successful! Your booking has been created. Redirecting...');
           
-          // Refresh bookings from backend
-          if (user && loadBookings) {
-            await loadBookings();
-          }
-          
-          setTimeout(() => {
+          // Wait a moment for backend to finish creating the booking, then refresh
+          setTimeout(async () => {
+            if (loadBookings) await loadBookings();
             navigate('/my-bookings');
-          }, 2000);
+          }, 3000);
         } else {
           setStatus('error');
           setMessage('Payment verification failed');
