@@ -45,13 +45,36 @@ export default function TaskerAccountSettings() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-screen bg-gray-50 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Tasker Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Tasker Settings</h1>
+
+        {/* Mobile: horizontal scrollable tabs */}
+        <div className="lg:hidden bg-white rounded-xl shadow-sm mb-4 overflow-x-auto">
+          <div className="flex p-2 gap-1 min-w-max">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                    activeSection === item.id
+                      ? 'bg-teal-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-md p-4 sticky top-20">
               <nav className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;

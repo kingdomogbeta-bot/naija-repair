@@ -159,9 +159,9 @@ export default function MessagesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-20 pb-4">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-        <div className="flex items-center gap-3 mb-4 px-2">
+    <main className="bg-gradient-to-br from-gray-50 to-gray-100" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', paddingTop: '4rem' }}>
+      <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 min-h-0">
+        <div className="flex items-center gap-3 py-3 px-1">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-gray-50 rounded-xl shadow-sm transition-all text-sm font-medium"
@@ -172,18 +172,19 @@ export default function MessagesPage() {
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Messages</h1>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200" style={{ height: 'calc(100vh - 11rem)' }}>
+        <div className="flex-1 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 min-h-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
-            <div className={`lg:col-span-1 border-r border-gray-200 overflow-y-auto bg-white ${
-              showMobileChat ? 'hidden lg:block' : 'block'
+            <div className={`lg:col-span-1 border-r border-gray-200 flex flex-col bg-white ${
+              showMobileChat ? 'hidden lg:flex' : 'flex'
             }`}>
-              <div className="p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-teal-600 to-cyan-600 sticky top-0 z-10">
+              <div className="p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-teal-600 to-cyan-600 flex-shrink-0">
                 <h2 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                   Chats
                 </h2>
                 <p className="text-teal-100 text-xs mt-1">{conversations.length} conversations</p>
               </div>
+              <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (
                 <div className="p-6 sm:p-8 text-center">
                   <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-inner">
@@ -253,10 +254,11 @@ export default function MessagesPage() {
                   })}
                 </div>
               )}
+              </div>
             </div>
 
-            <div className={`lg:col-span-2 flex flex-col ${
-              showMobileChat ? 'block' : 'hidden lg:flex'
+            <div className={`lg:col-span-2 flex flex-col min-h-0 ${
+              showMobileChat ? 'flex' : 'hidden lg:flex'
             }`}>
               {selectedConversation ? (
                 <>
@@ -305,7 +307,7 @@ export default function MessagesPage() {
                     )}
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3 bg-gradient-to-b from-gray-50 via-white to-gray-50" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
+                  <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3 bg-gradient-to-b from-gray-50 via-white to-gray-50 min-h-0">
                     {currentMessages.map(msg => {
                       const isMe = msg.senderId === user?.id || msg.senderId === user?._id || msg.senderEmail === user?.email;
                       return (
@@ -354,12 +356,14 @@ export default function MessagesPage() {
                   <EnhancedMessageInput onSend={handleSend} />
                 </>
               ) : (
-                <div className="text-center py-8 sm:py-12">
-                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 shadow-inner">
-                    <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center py-8 sm:py-12">
+                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 shadow-inner">
+                      <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                    </div>
+                    <p className="text-gray-600 font-semibold text-sm sm:text-base">Select a conversation</p>
+                    <p className="text-gray-400 text-xs sm:text-sm mt-1">Choose a chat to start messaging</p>
                   </div>
-                  <p className="text-gray-600 font-semibold text-sm sm:text-base">Select a conversation</p>
-                  <p className="text-gray-400 text-xs sm:text-sm mt-1">Choose a chat to start messaging</p>
                 </div>
               )}
             </div>
