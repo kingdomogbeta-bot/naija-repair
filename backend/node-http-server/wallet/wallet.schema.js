@@ -53,7 +53,7 @@ const userWalletSchema = new mongoose.Schema({
 
 const userTransactionSchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
-  type: { type: String, enum: ['refund'], required: true },
+  type: { type: String, enum: ['refund', 'withdrawal', 'payment'], required: true },
   amount: { type: Number, required: true },
   description: { type: String, required: true },
   bookingId: { type: String },

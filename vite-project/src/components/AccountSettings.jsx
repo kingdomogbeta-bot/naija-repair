@@ -395,22 +395,53 @@ function BalanceSection({ user }) {
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState('');
+  const [withdrawSuccess, setWithdrawSuccess] = useState('');
+
+  const load = async () => {
+    try {
+      const { getUserWallet } = await import('../services/api');
+      const res = await getUserWallet(getToken(), user?.email);
+      setWallet(res.data);
+      setTransactions(res.transactions || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { getUserWallet } = await import('../services/api');
-        const res = await getUserWallet(getToken(), user?.email);
-        setWallet(res.data);
-        setTransactions(res.transactions || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (user?.email) load();
   }, [user?.email]);
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    setWithdrawError('');
+    setWithdrawSuccess('');
+    const amount = Number(withdrawAmount);
+    if (!amount || amount <= 0) return setWithdrawError('Enter a valid amount');
+    if (amount > (wallet?.balance || 0)) return setWithdrawError('Insufficient balance');
+    setWithdrawing(true);
+    try {
+      const { userWalletWithdraw } = await import('../services/api');
+      await userWalletWithdraw(getToken(), { bankName, accountNumber, accountName, amount });
+      setWithdrawSuccess('Withdrawal request submitted!');
+      setShowWithdraw(false);
+      setBankName(''); setAccountNumber(''); setAccountName(''); setWithdrawAmount('');
+      load();
+    } catch (err) {
+      setWithdrawError(err.message);
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
   return (
     <div>
@@ -420,12 +451,37 @@ function BalanceSection({ user }) {
       ) : (
         <>
           <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl p-6 text-white mb-6">
-            <p className="text-sm text-teal-100 mb-1">Refund Balance</p>
+            <p className="text-sm text-teal-100 mb-1">Wallet Balance</p>
             <p className="text-4xl font-black">₦{(wallet?.balance || 0).toLocaleString()}</p>
             <p className="text-xs text-teal-200 mt-2">Total refunds received: ₦{(wallet?.totalRefunds || 0).toLocaleString()}</p>
+            <button
+              onClick={() => setShowWithdraw(true)}
+              disabled={!wallet?.balance}
+              className="mt-4 bg-white text-teal-700 font-semibold px-5 py-2 rounded-xl text-sm hover:bg-teal-50 disabled:opacity-40 transition-all"
+            >
+              Withdraw
+            </button>
           </div>
+
+          {withdrawSuccess && <p className="text-green-600 text-sm mb-4">{withdrawSuccess}</p>}
+
+          {showWithdraw && (
+            <form onSubmit={handleWithdraw} className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-5 mb-6 space-y-3">
+              <h3 className="font-bold text-gray-900">Withdraw Funds</h3>
+              <input required value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Bank Name" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" />
+              <input required value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Account Number" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" />
+              <input required value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Account Name" className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" />
+              <input required type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder={`Amount (max ₦${(wallet?.balance || 0).toLocaleString()})`} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" />
+              {withdrawError && <p className="text-red-600 text-sm">{withdrawError}</p>}
+              <div className="flex gap-3">
+                <button type="submit" disabled={withdrawing} className="flex-1 bg-teal-600 text-white py-3 rounded-xl font-semibold hover:bg-teal-700 disabled:opacity-50 text-sm">{withdrawing ? 'Processing...' : 'Submit'}</button>
+                <button type="button" onClick={() => setShowWithdraw(false)} className="flex-1 border-2 border-gray-200 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 text-sm">Cancel</button>
+              </div>
+            </form>
+          )}
+
           {transactions.length === 0 ? (
-            <p className="text-sm text-gray-500">No refund transactions yet.</p>
+            <p className="text-sm text-gray-500">No transactions yet.</p>
           ) : (
             <div className="space-y-3">
               {transactions.map(t => (
@@ -434,7 +490,9 @@ function BalanceSection({ user }) {
                     <p className="font-medium text-gray-900 text-sm">{t.description}</p>
                     <p className="text-xs text-gray-400">{new Date(t.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <p className="font-bold text-green-600">+₦{t.amount.toLocaleString()}</p>
+                  <p className={`font-bold ${t.type === 'refund' ? 'text-green-600' : 'text-red-500'}`}>
+                    {t.type === 'refund' ? '+' : '-'}₦{t.amount.toLocaleString()}
+                  </p>
                 </div>
               ))}
             </div>

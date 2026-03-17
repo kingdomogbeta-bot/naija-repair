@@ -235,6 +235,75 @@ exports.migrateHistoricPayments = async (req, res) => {
   }
 };
 
+exports.userWithdraw = async (req, res) => {
+  try {
+    const { bankName, accountNumber, accountName, amount } = req.body;
+    const userEmail = req.user.email;
+
+    if (!bankName || !accountNumber || !accountName || !amount) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const { UserWallet, UserTransaction } = require('./wallet.schema');
+    const wallet = await UserWallet.findOne({ userEmail });
+
+    if (!wallet || wallet.balance < amount) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
+    const balanceBefore = wallet.balance;
+    wallet.balance -= amount;
+    await wallet.save();
+
+    await UserTransaction.create({
+      userEmail,
+      type: 'withdrawal',
+      amount,
+      description: `Withdrawal to ${bankName} - ${accountNumber}`,
+      balanceBefore,
+      balanceAfter: wallet.balance
+    });
+
+    res.json({ success: true, wallet });
+  } catch (error) {
+    console.error('User withdraw error:', error.message);
+    res.status(500).json({ error: 'Failed to process withdrawal' });
+  }
+};
+
+exports.payWithWallet = async (req, res) => {
+  try {
+    const { amount, bookingId, service } = req.body;
+    const userEmail = req.user.email;
+
+    const { UserWallet, UserTransaction } = require('./wallet.schema');
+    const wallet = await UserWallet.findOne({ userEmail });
+
+    if (!wallet || wallet.balance < amount) {
+      return res.status(400).json({ error: 'Insufficient wallet balance' });
+    }
+
+    const balanceBefore = wallet.balance;
+    wallet.balance -= amount;
+    await wallet.save();
+
+    await UserTransaction.create({
+      userEmail,
+      type: 'payment',
+      amount,
+      description: `Payment for ${service || 'booking'}`,
+      bookingId,
+      balanceBefore,
+      balanceAfter: wallet.balance
+    });
+
+    res.json({ success: true, wallet });
+  } catch (error) {
+    console.error('Pay with wallet error:', error.message);
+    res.status(500).json({ error: 'Failed to pay with wallet' });
+  }
+};
+
 exports.getAdminEarnings = async (req, res) => {
   try {
     const earnings = await AdminEarnings.findOne({ key: 'platform' });

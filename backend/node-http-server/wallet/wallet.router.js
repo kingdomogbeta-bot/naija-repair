@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { creditWallet, getWallet, getTransactions, requestWithdrawal, getWithdrawals, processWithdrawal, getAllWithdrawals, getAdminEarnings, migrateHistoricPayments } = require('./wallet.controller');
+const { creditWallet, getWallet, getTransactions, requestWithdrawal, getWithdrawals, processWithdrawal, getAllWithdrawals, getAdminEarnings, migrateHistoricPayments, userWithdraw, payWithWallet } = require('./wallet.controller');
 const { protect, admin } = require('../middleware/auth');
 
 router.post('/credit', creditWallet);
+router.post('/user/withdraw', protect, userWithdraw);
+router.post('/user/pay', protect, payWithWallet);
 router.post('/admin/migrate', protect, admin, migrateHistoricPayments);
 router.get('/admin/earnings', protect, admin, getAdminEarnings);
 router.get('/admin/withdrawals', protect, admin, getAllWithdrawals);

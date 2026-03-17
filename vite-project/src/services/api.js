@@ -1098,6 +1098,28 @@ export const getUserWallet = async (token, userEmail) => {
   return data;
 };
 
+export const userWalletWithdraw = async (token, withdrawData) => {
+  const response = await fetch(`${API_URL}/wallet/user/withdraw`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(withdrawData)
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to withdraw');
+  return data;
+};
+
+export const payBookingWithWallet = async (token, payData) => {
+  const response = await fetch(`${API_URL}/wallet/user/pay`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payData)
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to pay with wallet');
+  return data;
+};
+
 // Support API functions
 export const createSupportTicket = async (token, ticketData) => {
   const response = await fetch(`${API_URL}/support/ticket`, {
