@@ -47,19 +47,14 @@ function BecomeTaskerPage() {
       return;
     }
 
-    setLoading(true);
     setError('');
+    // Switch to OTP page instantly — don't wait for email
+    setStep('otp');
 
-    try {
-      await sendOTP(email);
-      setStep('otp');
-    } catch (err) {
-      // Still navigate to OTP page — user can use resend
-      setStep('otp');
+    // Send OTP in background
+    sendOTP(email).catch(err => {
       console.error('OTP send failed:', err.message);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleOTPVerified = async (otp) => {
@@ -297,7 +292,7 @@ function BecomeTaskerPage() {
               {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">{error}</div>}
 
               <button type="submit" disabled={loading} className="w-full bg-teal-600 text-white py-4 rounded-xl font-semibold hover:bg-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50">
-                {loading ? 'Sending OTP...' : 'Continue'}
+                {loading ? 'Please wait...' : 'Continue'}
               </button>
             </form>
           )}
