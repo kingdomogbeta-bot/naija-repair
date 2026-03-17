@@ -174,6 +174,52 @@ exports.declineBooking = async (req, res) => {
     booking.cancelledAt = new Date();
     await booking.save();
 
+    // Auto-refund to user wallet if booking was paid
+    if (booking.paymentStatus === 'paid' && booking.totalAmount && booking.userEmail) {
+      try {
+        const { UserWallet, UserTransaction } = require('../wallet/wallet.schema');
+        const User = require('../user/user.schema');
+        const Notification = require('../notification/notification.schema');
+
+        let userWallet = await UserWallet.findOne({ userEmail: booking.userEmail });
+        if (!userWallet) userWallet = new UserWallet({ userEmail: booking.userEmail, balance: 0, totalRefunds: 0 });
+
+        const balanceBefore = userWallet.balance;
+        userWallet.balance += booking.totalAmount;
+        userWallet.totalRefunds += booking.totalAmount;
+        await userWallet.save();
+
+        await UserTransaction.create({
+          userEmail: booking.userEmail,
+          type: 'refund',
+          amount: booking.totalAmount,
+          description: `Refund — tasker declined your ${booking.service} booking`,
+          bookingId: booking._id.toString(),
+          balanceBefore,
+          balanceAfter: userWallet.balance
+        });
+
+        booking.paymentStatus = 'refunded';
+        await booking.save();
+
+        const user = await User.findOne({ email: booking.userEmail });
+        if (user) {
+          await Notification.create({
+            userId: user._id.toString(),
+            userEmail: booking.userEmail,
+            type: 'payment',
+            title: 'Refund Issued',
+            message: `Your ${booking.service} booking was declined. ₦${booking.totalAmount.toLocaleString()} has been refunded to your wallet.`,
+            bookingId: booking._id.toString()
+          });
+          if (global.io) global.io.to(user._id.toString()).emit('notification', { title: 'Refund Issued', message: `₦${booking.totalAmount.toLocaleString()} refunded to your wallet.` });
+        }
+        console.log('✅ Auto-refunded ₦' + booking.totalAmount + ' to user wallet:', booking.userEmail);
+      } catch (refundErr) {
+        console.error('Auto-refund error on decline:', refundErr.message);
+      }
+    }
+
     if (global.io) {
       global.io.to(booking.userId).emit('booking_updated', booking);
     }
