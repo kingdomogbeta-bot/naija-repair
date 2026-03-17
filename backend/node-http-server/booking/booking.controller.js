@@ -237,6 +237,26 @@ exports.taskerCompleteBooking = async (req, res) => {
       $inc: { completedTasks: 1 }
     });
 
+    // Credit tasker wallet now that job is complete
+    try {
+      const axios = require('axios');
+      const Payment = require('../payment/payment.schema');
+      const payment = await Payment.findOne({ bookingId: booking._id.toString(), status: 'success' });
+      const taskerForWallet = await Tasker.findById(taskerId).select('email');
+      if (taskerForWallet && booking.totalAmount) {
+        await axios.post(`${process.env.BACKEND_URL || 'https://naija-repair-api.onrender.com'}/api/wallet/credit`, {
+          taskerEmail: taskerForWallet.email,
+          amount: booking.totalAmount,
+          bookingId: booking._id.toString(),
+          paymentReference: payment?.reference || null,
+          description: `Payment for completed booking - ${booking.service}`
+        });
+        console.log('✅ Wallet credited after job completion for:', taskerForWallet.email);
+      }
+    } catch (walletError) {
+      console.error('Wallet credit error after completion:', walletError.message);
+    }
+
     // Notify user about completion
     if (global.io) {
       global.io.to(booking.userId).emit('booking_updated', booking);
