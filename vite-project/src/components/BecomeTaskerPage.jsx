@@ -24,7 +24,7 @@ function BecomeTaskerPage() {
   const [state, setState] = useState('Lagos');
   const [lga, setLga] = useState('Ikeja');
   const [address, setAddress] = useState('');
-  const [landmark, setLandmark] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -79,7 +79,6 @@ function BecomeTaskerPage() {
         state,
         lga,
         address,
-        landmark,
         serviceStates: [state],
         serviceLGAs: [lga],
         otp
@@ -293,11 +292,6 @@ function BecomeTaskerPage() {
               <div>
                 <label className="block text-gray-700 mb-2 font-medium text-sm">Address</label>
                 <input value={address} onChange={e => setAddress(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" type="text" placeholder="Your full address" />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium text-sm">Landmark</label>
-                <input value={landmark} onChange={e => setLandmark(e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" type="text" placeholder="Nearby landmark (e.g., Shoprite Mall)" />
               </div>
 
               {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">{error}</div>}
