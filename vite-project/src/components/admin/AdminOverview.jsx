@@ -15,89 +15,95 @@ export default function AdminOverview() {
   const upcomingBookings = bookings.filter(b => b.status === 'upcoming').length;
 
   const stats = [
-    { label: 'Total Users', value: users.length, change: '+12%', color: 'blue', icon: <Users className="w-6 h-6 text-blue-600" /> },
-    { label: 'Total Taskers', value: taskers.length, change: '+8%', color: 'teal', icon: <Wrench className="w-6 h-6 text-teal-600" /> },
-    { label: 'Total Bookings', value: bookings.length, change: '+15%', color: 'green', icon: <CalendarDays className="w-6 h-6 text-green-600" /> },
-    { label: 'Pending Verifications', value: pendingVerifications, change: '', color: 'yellow', icon: <Clock className="w-6 h-6 text-yellow-600" /> },
+    { label: 'Total Users', value: users.length, change: '+12%', icon: <Users className="w-5 h-5" />, bg: '#0d9488', light: '#f0fdfa' },
+    { label: 'Total Taskers', value: taskers.length, change: '+8%', icon: <Wrench className="w-5 h-5" />, bg: '#0f172a', light: '#f1f5f9' },
+    { label: 'Total Bookings', value: bookings.length, change: '+15%', icon: <CalendarDays className="w-5 h-5" />, bg: '#0d9488', light: '#f0fdfa' },
+    { label: 'Pending Verifications', value: pendingVerifications, change: '', icon: <Clock className="w-5 h-5" />, bg: '#f59e0b', light: '#fffbeb' },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {stats.map((stat, idx) => (
-          <div key={idx} className={`bg-white rounded-xl shadow-md p-6 border-l-4 border-${stat.color}-500`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                {stat.change && <p className="text-green-600 text-sm mt-1">{stat.change} ↑</p>}
-              </div>
-              <div className={`bg-${stat.color}-100 rounded-full p-3 relative`}>
-                {stat.icon}
-                {stat.label === 'Pending Verifications' && stat.value > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {stat.value}
-                  </span>
-                )}
-              </div>
+          <div key={idx} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium" style={{ color: '#64748b' }}>{stat.label}</p>
+              <p className="text-3xl font-black mt-1" style={{ color: '#0f172a' }}>{stat.value}</p>
+              {stat.change && (
+                <p className="text-xs font-semibold mt-1" style={{ color: '#0d9488' }}>{stat.change} ↑</p>
+              )}
+            </div>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white flex-shrink-0 relative" style={{ background: stat.bg }}>
+              {stat.icon}
+              {stat.label === 'Pending Verifications' && stat.value > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {stat.value}
+                </span>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Booking Status</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Booking Status */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-1 h-5 rounded-full" style={{ background: '#0d9488' }} />
+            <h3 className="text-base font-bold" style={{ color: '#0f172a' }}>Booking Status</h3>
+          </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Completed</span>
-              <span className="font-bold text-green-600">{completedBookings}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Upcoming</span>
-              <span className="font-bold text-blue-600">{upcomingBookings}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Cancelled</span>
-              <span className="font-bold text-red-600">{bookings.filter(b => b.status === 'cancelled').length}</span>
-            </div>
+            {[
+              { label: 'Completed', value: completedBookings, color: '#0d9488' },
+              { label: 'Upcoming', value: upcomingBookings, color: '#0f172a' },
+              { label: 'Cancelled', value: bookings.filter(b => b.status === 'cancelled').length, color: '#ef4444' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between py-2" style={{ borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none' }}>
+                <span className="text-sm font-medium" style={{ color: '#64748b' }}>{item.label}</span>
+                <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: item.color + '15', color: item.color }}>{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Top Services</h3>
+        {/* Top Services */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-1 h-5 rounded-full" style={{ background: '#0f172a' }} />
+            <h3 className="text-base font-bold" style={{ color: '#0f172a' }}>Top Services</h3>
+          </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Plumbing</span>
-              <span className="font-bold">234</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Cleaning</span>
-              <span className="font-bold">189</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Electrical</span>
-              <span className="font-bold">156</span>
-            </div>
+            {['Plumbing', 'Cleaning', 'Electrical'].map((service, i) => (
+              <div key={i} className="flex items-center justify-between py-2" style={{ borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none' }}>
+                <span className="text-sm font-medium" style={{ color: '#64748b' }}>{service}</span>
+                <span className="text-sm font-bold" style={{ color: '#0f172a' }}>{[234, 189, 156][i]}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-3">
+      {/* Recent Activity */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-1 h-5 rounded-full" style={{ background: '#0d9488' }} />
+          <h3 className="text-base font-bold" style={{ color: '#0f172a' }}>Recent Activity</h3>
+        </div>
+        <div className="space-y-2">
           {bookings.slice(0, 5).map((booking, idx) => (
-            <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="bg-teal-100 rounded-full p-2">
-                <Calendar className="w-5 h-5 text-teal-600" />
+            <div key={idx} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#f8fafc' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#0d9488' }}>
+                <Calendar className="w-4 h-4 text-white" />
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{booking.service} booking</p>
-                <p className="text-sm text-gray-600">by {booking.createdByName}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate" style={{ color: '#0f172a' }}>{booking.service} booking</p>
+                <p className="text-xs" style={{ color: '#94a3b8' }}>by {booking.userName || booking.createdByName}</p>
               </div>
-              <span className="text-sm text-gray-500">{new Date(booking.createdAt).toLocaleTimeString()}</span>
+              <span className="text-xs flex-shrink-0" style={{ color: '#94a3b8' }}>{new Date(booking.createdAt).toLocaleTimeString()}</span>
             </div>
           ))}
+          {bookings.length === 0 && <p className="text-sm text-center py-4" style={{ color: '#94a3b8' }}>No recent activity</p>}
         </div>
       </div>
     </div>
