@@ -64,14 +64,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex" style={{ background: '#f1f5f9' }}>
-      {/* Mobile toggle */}
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl shadow-lg text-white"
-        style={{ background: '#0f172a' }}
-      >
-        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+      {/* Mobile hamburger — only shows when sidebar is closed */}
+      {!mobileMenuOpen && (
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl shadow-lg text-white"
+          style={{ background: '#0f172a' }}
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
 
       {/* Sidebar */}
       <div className={`${
@@ -79,19 +81,29 @@ export default function AdminDashboard() {
       } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 w-64 transition-all duration-300 flex flex-col`}
         style={{ background: '#0f172a' }}
       >
-        {/* Logo */}
-        <div className="px-5 py-5 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0" style={{ background: '#0d9488' }}>
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
-            </svg>
+        {/* Logo + close button */}
+        <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0" style={{ background: '#0d9488' }}>
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-white font-black text-base leading-none tracking-tight">
+                Naija<span style={{ color: '#0d9488' }}>Repair</span>
+              </p>
+              <p className="text-xs font-semibold tracking-widest uppercase mt-0.5" style={{ color: '#0d9488', opacity: 0.8 }}>Admin</p>
+            </div>
           </div>
-          <div>
-            <p className="text-white font-black text-base leading-none tracking-tight">
-              Naija<span style={{ color: '#0d9488' }}>Repair</span>
-            </p>
-            <p className="text-xs font-semibold tracking-widest uppercase mt-0.5" style={{ color: '#0d9488', opacity: 0.8 }}>Admin</p>
-          </div>
+          {/* X button inside sidebar, only on mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg"
+            style={{ color: '#94a3b8' }}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Nav */}
