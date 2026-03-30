@@ -105,6 +105,38 @@ exports.verifyCode = async (req, res) => {
   }
 };
 
+exports.googleAuth = async (req, res) => {
+  try {
+    const { email, name, picture } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email required' });
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email,
+        phone: 'N/A',
+        password: await bcrypt.hash(Math.random().toString(36), 10),
+        photoUrl: picture || '',
+        googleAuth: true
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      photoUrl: user.photoUrl || picture,
+      token: generateToken(user._id)
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.register = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;

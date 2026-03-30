@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { useSettings } from "../context/SettingsContext";
 import CountryCodeSelect from "./CountryCodeSelect";
 import OTPVerification from "./OTPVerification";
-import { registerUser, sendOTP } from "../services/api";
+import { registerUser, sendOTP, googleAuthLogin } from "../services/api";
+import { useGoogleLogin } from "@react-oauth/google";
 
 function SignUpPage() {
   const { settings } = useSettings();
@@ -21,6 +22,24 @@ function SignUpPage() {
 
   const auth = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Get user info from Google
+        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        }).then(r => r.json());
+
+        const userData = await googleAuthLogin(userInfo.email, userInfo.name, userInfo.picture);
+        auth.login({ ...userData, role: userData.role || 'user' });
+        navigate('/user-home');
+      } catch (err) {
+        alert(err.message || 'Google sign up failed');
+      }
+    },
+    onError: () => alert('Google sign up failed. Please try again.')
+  });
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-100 py-12 px-4 flex items-center justify-center">
@@ -67,9 +86,7 @@ function SignUpPage() {
             <>
               <div className="space-y-4 mb-6">
                 <button 
-                  onClick={() => {
-                    alert('Google OAuth is not implemented yet. Please use the form below to create your account.');
-                  }}
+                  onClick={handleGoogleLogin}
                   className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">

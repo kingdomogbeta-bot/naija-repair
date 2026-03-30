@@ -64,6 +64,17 @@ export const verifyOTP = async (email, otp) => {
   return data;
 };
 
+export const googleAuthLogin = async (email, name, picture) => {
+  const response = await fetch(`${API_URL}/users/google-auth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name, picture })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Google login failed');
+  return data;
+};
+
 export const registerUser = async (userData) => {
   const response = await fetch(`${API_URL}/users/register`, {
     method: 'POST',

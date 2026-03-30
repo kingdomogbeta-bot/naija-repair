@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
-import { loginUser, loginTasker } from '../services/api';
+import { loginUser, loginTasker, googleAuthLogin } from '../services/api';
+import { useGoogleLogin } from '@react-oauth/google';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,6 +23,22 @@ function LoginPage() {
   const { settings } = useSettings();
   const auth = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        }).then(r => r.json());
+        const userData = await googleAuthLogin(userInfo.email, userInfo.name, userInfo.picture);
+        auth.login({ ...userData, role: userData.role || 'user' });
+        navigate(userData.role === 'admin' ? '/admin' : '/user-home');
+      } catch (err) {
+        alert(err.message || 'Google login failed');
+      }
+    },
+    onError: () => alert('Google login failed. Please try again.')
+  });
 
   const handleImageUpload = (e, type) => {
     const file = e.target.files[0];
@@ -96,9 +113,7 @@ function LoginPage() {
 
           <div className="space-y-4 mb-6">
             <button 
-              onClick={() => {
-                alert('Google OAuth is not implemented yet. Please use the form below to log in.');
-              }}
+              onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
