@@ -16,6 +16,7 @@ export default function TaskerDashboard() {
   const { taskers, refreshTaskers } = useTaskers();
   const [activeTab, setActiveTab] = useState('jobs');
   const [currentTasker, setCurrentTasker] = useState(null);
+  const [loadingTasker, setLoadingTasker] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
@@ -33,6 +34,8 @@ export default function TaskerDashboard() {
         }
       } catch (error) {
         console.error('Failed to fetch current tasker:', error);
+      } finally {
+        setLoadingTasker(false);
       }
     };
     fetchCurrentTasker();
@@ -163,8 +166,8 @@ export default function TaskerDashboard() {
     }
   };
 
-  const showVerificationBanner = !currentTasker?.verified && (!currentTasker?.verificationStatus || currentTasker?.verificationStatus === 'rejected');
-  const showPendingBanner = !currentTasker?.verified && currentTasker?.verificationStatus === 'pending';
+  const showVerificationBanner = !loadingTasker && !currentTasker?.verified && (!currentTasker?.verificationStatus || currentTasker?.verificationStatus === 'rejected');
+  const showPendingBanner = !loadingTasker && !currentTasker?.verified && currentTasker?.verificationStatus === 'pending';
 
   const available = bookings.filter(b => !b.assignedTo && (b.status === 'pending' || b.status === 'upcoming'));
   const mine = bookings.filter(b => b.assignedTo === user?.email || b.taskerId === (user?._id || user?.id));
