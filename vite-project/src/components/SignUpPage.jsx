@@ -20,20 +20,22 @@ function SignUpPage() {
   const [password, setPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
 
+  const [googlePending, setGooglePending] = useState(null); // stores { email, name, picture } while waiting for OTP
+
   const auth = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // Get user info from Google
         const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
         }).then(r => r.json());
-
-        const userData = await googleAuthLogin(userInfo.email, userInfo.name, userInfo.picture);
-        auth.login({ ...userData, role: userData.role || 'user' });
-        navigate('/user-home');
+        // Send OTP to their Google email
+        await sendOTP(userInfo.email);
+        setGooglePending({ email: userInfo.email, name: userInfo.name, picture: userInfo.picture });
+        setEmail(userInfo.email);
+        setStep('otp');
       } catch (err) {
         alert(err.message || 'Google sign up failed');
       }
@@ -134,23 +136,31 @@ function SignUpPage() {
               email={email}
               onVerified={async () => {
                 try {
-                  const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-                  const userData = await registerUser({
-                    name: fullName,
-                    email: email.trim(),
-                    phone: `${countryCode}${phone.trim()}`,
-                    password
-                  });
-                  
-                  setSubmitted(true);
-                  auth.login({
-                    name: userData.name,
-                    email: userData.email,
-                    phone: userData.phone,
-                    role: userData.role,
-                    token: userData.token
-                  });
-                  setTimeout(() => navigate('/user-home'), 1500);
+                  if (googlePending) {
+                    // Google signup — create account after OTP verified
+                    const userData = await googleAuthLogin(googlePending.email, googlePending.name, googlePending.picture);
+                    setSubmitted(true);
+                    auth.login({ ...userData, role: userData.role || 'user' });
+                    setTimeout(() => navigate('/user-home'), 1500);
+                  } else {
+                    // Regular signup
+                    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+                    const userData = await registerUser({
+                      name: fullName,
+                      email: email.trim(),
+                      phone: `${countryCode}${phone.trim()}`,
+                      password
+                    });
+                    setSubmitted(true);
+                    auth.login({
+                      name: userData.name,
+                      email: userData.email,
+                      phone: userData.phone,
+                      role: userData.role,
+                      token: userData.token
+                    });
+                    setTimeout(() => navigate('/user-home'), 1500);
+                  }
                 } catch (error) {
                   alert(error.message || 'Registration failed');
                 }
